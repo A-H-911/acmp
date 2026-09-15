@@ -100,8 +100,11 @@
   flex-direction: column;
   gap: 22px;
 }
+/* A superseded decision reads as retired: muted with tokens, not opacity, which took its muted lines under AA
+   (DEF-190, ADR-0045: AA governs). */
 .dec-body-muted {
-  opacity: 0.62;
+  background: var(--subtle);
+  box-shadow: none;
 }
 .dec-section-h {
   margin: 0 0 8px;

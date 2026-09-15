@@ -73,7 +73,8 @@
   block-size: 22px;
   background: var(--border);
 }
-.act-toggle-on { font-size: 10px; font-weight: 700; opacity: 0.7; }
+/* The 'On' label inherits the active chip's --accent on --primary-tint; at opacity 0.7 it was 3.12:1 (DEF-190). */
+.act-toggle-on { font-size: 10px; font-weight: 700; }
 .act-count {
   margin-inline-start: auto;
   display: inline-flex;

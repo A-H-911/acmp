@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>WBS-40.8 interview - NFR-033 verification and DEF-186</title>
+<style>
+ body{font:15px/1.55 system-ui,sans-serif;max-width:60rem;margin:2rem auto;padding:0 1rem;color:#111}
+ h1{font-size:1.5rem} h2{font-size:1rem;font-family:ui-monospace,monospace;margin:2rem 0 .4rem;color:#004080}
+ pre{background:#f6f7f9;border:1px solid #d8dbe0;border-left:3px solid #004080;padding:.8rem;
+     white-space:pre-wrap;word-wrap:break-word;font:13px/1.5 ui-monospace,monospace}
+ .note{background:#fffbe6;border:1px solid #e8d98a;padding:.7rem;font-size:.9rem}
+ .intro{border:1px solid #c9ced6;border-radius:4px;padding:.2rem 1rem 1rem;margin:1.5rem 0}
+ .unverified{background:#fdecea;border:1px solid #e0a6a0;padding:.6rem;font-size:.9rem;margin:1rem -.4rem}
+ table{border-collapse:collapse;margin:.6rem 0} th,td{border:1px solid #d8dbe0;padding:.35rem .6rem;
+ text-align:left;font-size:.92rem;vertical-align:top} th{background:#f0f2f5}
+</style></head><body>
+<h1>WBS-40.8 interview - NFR-033 verification and DEF-186</h1>
+<p class="note">Every block below is quoted <b>verbatim</b> in one process from the tamheed exports under
+<code>tamheed-package/exports/</code>, written by the MCP tool <code>entity_export</code> (package digest
+<code>dac16d52971933d9f59bb0d469ddb8798a0914642a6b156051f5072b52b571d4</code> &mdash; <code>package_verify()</code> returning the same value means nothing has
+changed since), or from the working tree, and each was re-read from its own source
+and confirmed byte-identical after this page was written. Nothing here was re-typed (<code>LL-001</code>,
+<code>LL-011</code>). <b>Provenance is guaranteed; correctness is not</b> — whether a quoted claim is true is
+part of what is being asked. The connective prose around these blocks carries no such guarantee
+(<code>LL-023</code>).</p>
+<div class="intro"><p class="unverified"><b>The section below is the agent's own framing, not a
+quotation.</b> Nothing in it carries the provenance guarantee the blocks beneath it do; check any claim in it
+against those blocks.</p>
+<p>WBS-40.8 interview, 2026-09-15. Every record and file excerpt below is quoted by the generator; this paragraph
+is the only text on the page that is not.</p>
+<p>Four questions follow: how NFR-033's automated leg is verified (its own clause names a Lighthouse check in CI,
+which the planned token test is not); how DEF-186 is fixed; where the manual contrast check goes; and whether an
+acceptance criterion is written first. The token and test excerpts are the current <code>tokens.css</code> light palette
+and the contrast test's pair table.</p>
+</div>
+<h2>DEF-186  [defects]</h2>
+<pre>id: DEF-186
+title: IN THE LIGHT THEME, MUTED TEXT FAILS WCAG AA CONTRAST ACROSS THE APP: ONE TOKEN, `--text-3: #6b7480`, ON THREE LIGHT SURFACES. Measured 2026-09-15 by a throwaway probe that enabled axe-core's `color-contrast` rule (the rule the live sweep disables 'by convention', and the engine Lighthouse's contrast audit uses) over the 23 static Secretary routes: **light/English 104 failing nodes, light/Arabic 43, dark/English 0, dark/Arabic 0 - 147 distinct offenders, and ALL 147 are `#6b7480` text**, on `--subtle #f4f6f8` (4.37:1, 81 nodes), `--bg-app #e9edf1` (4.02:1, 51) and `--header #f8f9fb` (4.49:1, 15), against the 4.5:1 `NFR-033` (Must) requires for body text. Offenders include the search keyboard hint, the audit nav sub-label, breadcrumbs, tab counts on /notifications and fourteen elements on /profile/preferences. WHY NO GATE SAW IT: `src/styles/contrast.test.ts` checks `text-3` only on `surface` (#ffffff, where it passes) - the token table has no row for the surfaces the token is actually painted on - and both axe passes disable `color-contrast`. The dark palette is clean. Parameterised routes were not probed; the same token renders there.
+severity: medium
+lifecycle_status: Open
+found_in: SL-043
+custom_attributes: {"found_by": "throwaway Playwright probe (axe color-contrast only), local E2E stack, 2026-09-15, preparing WBS-40.8; probe file deleted after the run", "measured": "23 static routes x {light,dark} x {en,ar}; 147 distinct nodes, all fg #6b7480 (--text-3, light palette, tokens.css:50) on #f4f6f8 (--subtle) 4.37, #e9edf1 (--bg-app, --border-soft) 4.02, #f8f9fb (--header) 4.49", "related": "NFR-033, DW-072, WBS-40.8, ADR-0045 (AA governs where a .dc.html cannot meet both), INV-014."}</pre>
+<h2>WBS-40.8  [wbs_items]</h2>
+<pre>id: WBS-40.8
+title: `DW-072`: THE SECOND CONTRAST THRESHOLD AND THE FOUR STATES. `NFR-033` (Must) names 4.5:1 for body text AND 3:1 for large text and UI components, across normal, hover, focused and disabled. `contrast.test.ts` asserts 20 token pairs at 4.5:1 in both palettes, with a real anti-vacuity guard — and NOT ONE pair uses 3:1, and the four states are absent from the pair table entirely.
+
+**BUILD.** 3:1 cases (border-on-background, focus ring, disabled state) added to the existing test, which already runs in CI and already fails on a body-text regression.
+
+⚠ **DO NOT UNDERSELL WHAT IS THERE**: this test was once falsely green because a plain `indexOf` matched its selector inside a prose comment and returned the LIGHT palette for every dark case, for the file's whole life until 2026-08-10. Whatever is added inherits that lesson — the guard must be unable to pass by comparing nothing to nothing.
+
+**DONE-CLAIMED WHEN** both thresholds and all four states have cases, and a deliberately failing token is refused.
+phase_id: PH-7
+slice_id: SL-043
+effort: S
+lifecycle_status: Approved
+source_kind: clarification
+source_span: DW-072; DEC-150 d4/d8, operator interview 2026-09-08. Scoped by SC-056.</pre>
+<h2>DW-072  [deferred_work]</h2>
+<pre>id: DW-072
+title: NFR-033 IS VERIFIED ON ONE OF ITS TWO THRESHOLDS AND ON NONE OF THE FOUR STATES IT NAMES. NFR-033 (Must, Approved) requires colour contrast for all text on background AND FOR UI COMPONENT STATES - normal, hover, focused, disabled - to meet WCAG 2.2 AA, and states two thresholds explicitly: 4.5:1 for body text, 3:1 for large text and UI components. WHAT EXISTS IS BETTER THAN MOST GATES IN THIS REPOSITORY AND SHOULD NOT BE UNDERSOLD. src/Acmp.Web/src/styles/contrast.test.ts parses tokens.css directly, computes real WCAG relative luminance and contrast ratios, and asserts 20 foreground-on-background token pairs in BOTH the light and the explicit dark palettes - plus a third assertion that the OS-default dark palette inside the prefers-color-scheme media query is IDENTICAL to the explicit one, because they are two hand-maintained copies and only one was reachable by the checks. It also carries its own anti-vacuity guard: before comparing the two dark palettes it asserts the parsed block contains more than ten tokens, so a selector that stopped matching cannot pass by comparing nothing to nothing. THAT GUARD EXISTS BECAUSE THE TEST WAS ONCE FALSELY GREEN in exactly that way - its header records that a plain indexOf matched the selector inside a PROSE COMMENT and returned the LIGHT palette for every dark case, for the file's entire life until 2026-08-10. WHAT IS NOT COVERED, AND IT IS HALF THE REQUIREMENT. Every one of the 20 pairs is asserted at 4.5:1. NOT ONE uses the 3:1 threshold, so the requirement's 'large text and UI components' clause has no case at all - no border-on-background pair, no focus-ring pair, no disabled-state pair. And the four states the requirement names by name - normal, hover, focused, disabled - are absent from the pair table entirely; tokens.css contains only six focus, hover or disabled mentions in total. SCOPE IS NARROWER THAN THE REQUIREMENT TOO: the file's own header says it covers 'the design tokens the Topics screens rely on', not the application. AND THE RENDERED QUESTION IS UNTOUCHED BY DESIGN: color-contrast is explicitly disabled in BOTH axe passes, the jsdom one because there is no layout engine and the live Playwright one by convention, so nothing anywhere measures contrast as actually painted - only as declared in tokens.
+severity: medium
+activation_trigger: Whenever a design token colour changes - the existing test already fails CI on a body-text regression, so the moment to add the missing thresholds is the moment someone is already editing the palette. Also fires before any release sign-off claiming WCAG 2.2 AA, since half the requirement's thresholds are unmeasured. CHEAPEST FIRST STEP, and it is genuinely small: the machinery already exists and is good. Add pairs at the 3:1 threshold for borders, focus rings and disabled states, and add the hover, focus and disabled token variants to the PAIRS table. No new dependency, no browser, no new technique - the same file, more rows.
+lifecycle_status: Activated
+source_kind: code
+source_span: NFR-033; src/Acmp.Web/src/styles/contrast.test.ts; src/Acmp.Web/src/styles/tokens.css; DW-029 batch 16
+custom_attributes: {"found_by": "DW-029 batch 16, 2026-08-20, the browser batch. This one was a candidate for Met on the strength of a genuinely well-built gate, and reading the requirement's two thresholds is what stopped it - the same shape as NFR-037 in batch 15, where strong evidence covered two thirds of a three-part clause.", "measured": "20 token pairs, all at 4.5:1, across light and explicit-dark, plus an OS-dark sync assertion with an anti-vacuity guard. Zero pairs at 3:1. Zero hover, focus or disabled pairs. tokens.css contains 6 focus/hover/disabled mentions total. color-contrast disabled in both axe passes.", "scope": "NOTHING WAS BUILT. Batch 16 measured and recorded only."}</pre>
+<h2>NFR-033  [requirements]</h2>
+<pre>id: NFR-033
+kind: non-functional
+title: Color contrast ratio for all text on background and UI component states (normal, hover, focused, disabled) shall meet WCAG 2.2 AA minimum (4.5:1 for body text, 3:1 for large text and UI components). **Target:** Contrast ratio ≥ 4.5:1 (body), ≥ 3:1 (large/UI).
+statement: Color contrast ratio for all text on background and UI component states (normal, hover, focused, disabled) shall meet WCAG 2.2 AA minimum (4.5:1 for body text, 3:1 for large text and UI components). **Target:** Contrast ratio ≥ 4.5:1 (body), ≥ 3:1 (large/UI).
+priority: Must
+mvp: 1
+lifecycle_status: Approved
+source_kind: brief
+source_span: ADR-0012; WCAG 2.2 AA
+introduced_in: 1
+custom_attributes: {"v1": {"ID": "NFR-033", "Requirement": "Color contrast ratio for all text on background and UI component states (normal, hover, focused, disabled) shall meet WCAG 2.2 AA minimum (4.5:1 for body text, 3:1 for large text and UI components). **Target:** Contrast ratio ≥ 4.5:1 (body), ≥ 3:1 (large/UI).", "Source": "ADR-0012; WCAG 2.2 AA", "Priority": "Must", "Verification": "Automated: Lighthouse contrast check in CI; manual: contrast check (e.g., Colour Contrast Analyser) on light and dark themes, both EN/AR layouts."}}</pre>
+<h2>ADR-0045  [adrs]</h2>
+<pre>id: ADR-0045
+title: ADR-0045: The calendar meeting chip is floored at a 24 px target box. `INV-014`'s AA clause governs its px-literal clause where the reference design cannot satisfy both — the invariant is applied, not set aside.
+context: `INV-014` reads, in one statement: *"Any screen with a matching `.dc.html` matches it exactly — tokens/anatomy/states/iconography/RTL/light-dark/copy/**AA** — composed from the shared design system."* **Both the pixel literals and AA conformance are clauses of the SAME invariant.** No decision in this package had ever had to choose between them, because until now they had never disagreed.
+
+They disagree on the calendar day-cell event chip. `features/topics/Calendar.tsx` renders each scheduled meeting as a `&lt;button className="cal-event"&gt;`; `topics.css` styles it at `font-size: 10.5px` with `padding-block: 3px`, both taken from `ACMP Backlog &amp; Topic.dc.html`, giving a box about **21 px** tall. WCAG 2.2 SC 2.5.8 `target-size` (Minimum) requires **24×24 CSS px** on an interactive target. `inline-size: 100%` satisfies the width; the height is short by roughly 3 px.
+
+⚠ **THE PROJECT ADMITTED THIS CRITERION DELIBERATELY AND IN WRITING.** `rtl-a11y.spec.ts`'s tag list carries a comment: *"D-23: include WCAG 2.2 AA — the machine-testable addition over 2.1 is `target-size` (SC 2.5.8, &gt;=24x24px)"*. The rule was not inherited by accident from a default rule set; it was chosen, named, and its cost anticipated.
+
+⚠ **THE CONFLICT WAS INVISIBLE FOR WEEKS AND THAT IS `DEF-126`.** The e2e seed pinned every meeting to a fixed `2026-09-01`, both calendars open on the CURRENT month, so no chip ever rendered under axe and the sweep passed over an empty grid from `WBS-24.2` until the clock reached that date. The conflict is not new; only its visibility is.
+
+⚠ A **sibling** exists: `features/meetings/MeetingsCalendar.tsx`'s `.mt-cal-event`, an `&lt;a&gt;` at `font-size: 9.5px` / `padding-block: 2px`, about **17 px** — worse, on a route (`/meetings`) that no accessibility sweep visited at all.
+decision: d1 — **BOTH CHIPS ARE FLOORED AT A 24 px TARGET BOX AND THE TYPE IS NOT TOUCHED.** `.cal-event` gains `min-block-size: 24px` (it is already `display: flex; align-items: center`, so the content stays optically where the mock draws it and the chip grows downward by ~3 px). `.mt-cal-event` gains `min-block-size: 24px` and `line-height: 20px` — 20 + 2 + 2 = 24 exactly — keeping `display: block` because its ellipsis depends on it. **`font-size` stays 10.5 px and 9.5 px respectively: the drawn TYPE is unchanged, only the hit box grows.**
+
+d2 — **A FLOOR, NOT MORE PADDING, AND THE DISTINCTION IS THE POINT.** Padding is derived from the type and would have to be re-derived every time the type or the inherited line-height moves; `min-block-size` states the CONFORMANCE THRESHOLD ITSELF, so it keeps holding when someone changes the font stack. A value that encodes the requirement survives edits that a value computed from the requirement does not.
+
+d3 — **`INV-014` IS APPLIED, NOT WAIVED, AND NO NEW ADR IS OWED FOR THE NEXT CASE.** Where a `.dc.html` reference cannot satisfy both the px-literal clause and the AA clause, **the AA clause governs and the deviation is recorded**. AA is a conformance obligation the project has committed to and can fail an audit on; a px literal is a fidelity target whose own invariant already names AA beside it. ⛔ **This is deliberately NARROW: it licenses the minimum change that reaches conformance, and nothing else.** It is not a general licence to depart from a reference for taste, ergonomics or convenience — any other deviation still needs its own record.
+
+d4 — **THE REFERENCE DESIGNS ARE NOT EDITED AND THE DIVERGENCE IS RECORDED HERE INSTEAD.** `ACMP Backlog &amp; Topic.dc.html` and `ACMP Meetings.dc.html` are the design's source of truth and this package does not own them. A future design-parity review reading either file will find a chip whose height the implementation exceeds; **this ADR is the answer to why**, and the reason it is an ADR rather than a code comment is that a comment is invisible to that review.
+
+d5 — **THE SWEEP MUST PROVE IT HAD A SUBJECT, NOT MERELY THAT IT RAN.** The seed becomes relative to the current month, each calendar case seeds its own meeting rather than inheriting one another spec happened to leave behind, and both cases assert a chip is VISIBLE before invoking axe. `/meetings` joins the sweep, so the sibling fix is guarded rather than merely made.
+lifecycle_status: Approved
+custom_attributes: {"status_note": "Proposed - the operator approved the REMEDY (2026-09-01: pad to a 24px target box without touching the type, recorded as an ADR, seed made relative). The ADR row itself awaits their approval.", "supersedes_nothing": "INV-014 is untouched as a row. This ADR records which of its clauses governs where they conflict, and licenses only the minimum change that reaches conformance.", "measured": "topics.css .cal-event: &lt;button&gt;, display:flex, font-size 10.5px, padding-block 3px, inline-size 100% - about 21px tall. meetings.css .mt-cal-event: &lt;a&gt;, display:block, font-size 9.5px, padding-block 2px - about 17px. WCAG 2.2 SC 2.5.8 requires 24x24. axe reported target-size, impact serious, 16 nodes EN / 17 AR on the Backlog calendar.", "criterion_was_chosen_deliberately": "rtl-a11y.spec.ts's tag list comment: 'D-23: include WCAG 2.2 AA - the machine-testable addition over 2.1 is target-size (SC 2.5.8, &gt;=24x24px)'. Not inherited by accident.", "why_a_floor_not_padding": "Padding is derived from the type and must be re-derived when the type or inherited line-height moves. min-block-size states the conformance threshold itself and keeps holding.", "narrowness": "Licenses the minimum change that reaches conformance and nothing else. Not a general licence to depart from a reference for taste or ergonomics.", "found_by": "DEF-126, from PR #335's e2e run 33453125432."}
+last_referenced: 2026-09-01T01:39:01Z</pre>
+<h2>INV-014  [invariants]</h2>
+<pre>id: INV-014
+title: Do not let the UI drift from the reference design. Any screen with a matching `.dc.html` in [`ACMP product context/`](../../ACMP%20product%20context/) matches it exactly (read directly, not via MCP) —
+statement: Do not let the UI drift from the reference design. Any screen with a matching `.dc.html` in [`ACMP product context/`](../../ACMP%20product%20context/) matches it exactly (read directly, not via MCP) — tokens/anatomy/states/iconography/RTL/light-dark/copy/AA — composed from the shared design system. No-reference screens compose from the design system + the IA spec and are flagged.
+enforcement: design-parity ledger; visual regression; review
+lifecycle_status: Approved
+custom_attributes: {"v1": {"ID": "INV-014", "Invariant": "Do not let the UI drift from the reference design. Any screen with a matching `.dc.html` in [`ACMP product context/`](../../ACMP%20product%20context/) matches it exactly (read directly, not via MCP) — tokens/anatomy/states/iconography/RTL/light-dark/copy/AA — composed from the shared design system. No-reference screens compose from the design system + the IA spec and are flagged.", "Rationale": "Design is the visual source of truth; the package is the behavior source of truth.", "Enforced by": "design-parity ledger; visual regression; review"}}
+last_referenced: 2026-08-17T21:08:33Z</pre>
+<h2>DEC-159  [decisions]</h2>
+<pre>id: DEC-159
+title: OPERATOR INTERVIEW, 2026-09-09 (SIXTY-EIGHTH ROUND): THE THREE COMMITS ARE PUSHED AFTER A LOCAL SCAN; `DW-050` STAYS `Open` ON THE STRICTEST READING OF ITS OWN VERIFICATION CLAUSE; THE ENDPOINT **AND** BROWSER VANTAGE WORK IS AUTHORISED ON THE BOX; `LL-077` IS APPROVED UNPINNED.
+decision: f1 - **`1a5f59d5`, `85a919c1` AND `9e0909f8` ARE PUSHED, WITH A LOCAL `gitleaks` SCAN FIRST.** Asked rather than banked from `DEC-158` e3, whose word named only `abf4ecb1` (`LL-002`, `DEC-127` d1). ⭐ **THE CONTROL FIRED: 1,079 commits scanned, no leaks found** — up from 1,073 at `DEC-157` d1, which is the correct delta for the commits added since, so the scan is known to have had a subject rather than silently finding nothing. This matters because all three commits are package-only: the push ran **no** CI jobs, and GitHub's own `9 of 9 required status checks are expected` line on the push is `DEF-150` visible in the wild.
+
+f2 - **`DW-050` STAYS `Open`. THE CONDITIONS WERE NOT MET AS WRITTEN.** `NFR-008`'s Verification clause names **OTel** and **20 users simultaneously authenticated**; neither was satisfied as specified, and the operator ruled that a favourable number does not discharge a row whose stated method was not followed. **The ~2.4 ms P95 auth-check figure is not disputed and is not withdrawn** — it is simply not the measurement the requirement asks for. The three judgement calls `DEC-158`'s rationale left open were put verbatim and this is the answer to all three.
+
+f3 - **BOTH THE ENDPOINT AND THE BROWSER VANTAGE WORK ARE AUTHORISED, ON THE BOX.** Extend the committed probe to the topic-list, detail and search endpoints (`DW-103`) using the same temporary `directAccessGrantsEnabled` flip it already performs and reverts under a trap; **and** install headless Chromium on the EC2 instance to drive the three named pages cold-cache and throttled, answering `DW-043` and `DW-048`. The narrower endpoints-only and browser-only routes were both offered and **not** taken. uat stays up for this work.
+
+f4 - **`LL-077` IS APPROVED, UNPINNED.** It binds future sessions without adding a line to the always-loaded note, which already renders 38 lesson lines against a curation ceiling of 20. Pinning was offered with that cost stated and declined.
+rationale: ⭐⭐ **f2 IS THE ROUND'S SUBSTANTIVE RULING AND IT WENT AGAINST THE COMFORTABLE READING.** The agent offered no recommendation (`DEC-140` d3) and the three options were genuinely live. The operator took the one that keeps a row open despite a measured number **two orders of magnitude inside its target**, on the ground that `NFR-008`'s Verification clause specifies a mechanism (OTel) and a condition (20 simultaneously authenticated users) that the probe does not implement. ⭐ **THE PRINCIPLE THIS SETTLES, WHICH NO ROW CARRIED BEFORE: A REQUIREMENT'S VERIFICATION CLAUSE IS PART OF THE REQUIREMENT, NOT ADVICE ABOUT HOW TO CHECK IT.** A measurement by a different method is evidence, and may be strong evidence, but it does not close the row. That is the same instinct as `DEC-155` d2's *real measurement of the wrong quantity*, applied one level up — there the QUANTITY was wrong, here the quantity is right and the METHOD is not.
+
+⚠⚠ **A CONSEQUENCE OF f2 THAT f3 DOES NOT COVER, RECORDED BEFORE IT CAN BE DISCOVERED LATER.** f3 authorises the vantage work for `DW-043`, `DW-048` and `DW-103`. **It does not, on its own, discharge `DW-050`** — f2 rejected the non-OTel route, so closing that row now requires OTel trace duration over 20 simultaneously authenticated users, which is a different instrument from either the probe extension or the browser. Whether the endpoint work should also emit OTel spans while it is in there is a question for when the shape of that work is known, and is **not** assumed by this ruling. Four rows now need the deployment vantage, not three.
+
+⭐ **THE `LL-005` SWEEP REMOVED AN OPTION FROM INSIDE THE QUESTION BEFORE IT WAS PUT — THE FOURTH TIME THIS HAS HAPPENED.** A *pinned throttled CI profile as a regression gate* was about to be offered as a fresh option for `NFR-001`. **`SC-058` had already considered and deliberately declined it one round earlier**, with a stated reason: *attaching a verification mechanism is a different change from completing a requirement's conditions*. Offering it would have re-litigated the operator's own ruling while presenting it as new.
+
+⭐⭐ **THE SAME SWEEP PRODUCED THE FINDING THAT MAKES f3's BROWSER HALF NECESSARY RATHER THAN CONVENIENT.** `NFR-001`'s own record specifies **"Throttle to &gt;=10 Mbps"** — a ceiling imposed DOWNWARD, not a floor a vantage must possess. **You cannot throttle 1.96 Mbps up.** That is why this workstation is permanently disqualified rather than merely unlucky, and why the box — which serves the same asset over loopback in 57-160 ms — is the only vantage in reach that can satisfy the clause **as written** instead of merely showing headroom, which is the limitation `DEC-157` d4 stated in advance of its own on-box run.
+
+⚠ **f1's SCAN IS THE ONLY CONTROL THOSE COMMITS GET.** `DEF-150`: a package-only push runs no jobs, so the commits are UNSCANNED rather than clean, and a silent empty scan reads exactly like a pass — which is why the commit count is quoted here and not just the verdict.
+lifecycle_status: Approved
+source_kind: clarification
+source_span: Operator interview, 2026-09-09 (sixty-eighth round). Four questions in one AskUserQuestion call, put after an LL-005 sweep that read NFR-001 in full, SC-058, DEC-154 d4 and the four DW rows DEC-155 d5 groups - the sweep dissolved one option (the CI throttle gate, already declined by SC-058) and produced the throttle-is-a-ceiling finding that reframed another. Live state at the time of asking: gate_run 7/7, readiness_check(package) ready:true on every blocking rule, three commits ahead of origin/main, uat running on 7459c360, Keycloak directAccessGrantsEnabled re-verified false after the Playwright work (password grant refused, HTTP 400 unauthorized_client).</pre>
+<h2>src/Acmp.Web/src/styles/tokens.css:47-51</h2>
+<pre>  /* Themeable — light (default) */
+  --bg-app: #e9edf1; --surface: #ffffff; --subtle: #f4f6f8; --sunken: #e6eaee; --header: #f8f9fb;
+  --border: #dde2e8; --border-soft: #e9edf1; --border-strong: #c5ccd5;
+  --text: #1a232f; --text-2: #56616f; --text-3: #6b7480;
+  --primary: #1a4f8a; --primary-hover: #163f6e; --primary-fg: #ffffff;</pre>
+<h2>src/Acmp.Web/src/styles/contrast.test.ts:72-96</h2>
+<pre>const TEXT = 4.5; // normal text (WCAG 1.4.3)
+
+// [foreground token, background token, min ratio, where it appears in the Topics screens]
+const PAIRS: ReadonlyArray&lt;readonly [string, string, number, string]&gt; = [
+  ['text', 'surface', TEXT, 'card body text (table/list/kanban)'],
+  ['text', 'bg-app', TEXT, 'detail title/body/timeline text on the page'],
+  ['text', 'subtle', TEXT, 'comment body bubble'],
+  ['text', 'sunken', TEXT, 'kanban column title'],
+  ['text-2', 'surface', TEXT, 'owner/type/age/urgency/meta on cards'],
+  ['text-2', 'bg-app', TEXT, 'header subtitle, count, detail section labels, timeline meta'],
+  ['text-2', 'subtle', TEXT, 'drop hint, footer note, detail key chip, rel sub'],
+  ['text-2', 'sunken', TEXT, 'avatar initials'],
+  ['text-2', 'primary-tint', TEXT, 'selected type-card description'],
+  ['text-3', 'surface', TEXT, 'field hints, fieldset sub-help, char counter, move-current'],
+  ['accent', 'surface', TEXT, 'record keys, links'],
+  ['accent', 'primary-tint', TEXT, 'selected card title, system tokens'],
+  ['st-neutral-fg', 'st-neutral-bg', TEXT, 'neutral status chip'],
+  ['st-info-fg', 'st-info-bg', TEXT, 'info status chip + detail stream chips'],
+  ['st-sched-fg', 'st-sched-bg', TEXT, 'scheduled status chip'],
+  ['st-warn-fg', 'st-warn-bg', TEXT, 'returned/warn status chip'],
+  ['st-success-fg', 'st-success-bg', TEXT, 'done status chip'],
+  ['st-danger-fg', 'st-danger-bg', TEXT, 'urgent pill / danger chip'],
+  ['st-danger-fg', 'surface', TEXT, 'urgent urgency text, SLA-breached age'],
+  ['primary-fg', 'primary', TEXT, 'avatar initials, primary buttons'],
+];</pre>
+</body></html>

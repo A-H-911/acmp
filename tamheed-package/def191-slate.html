@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>DEF-191 - the dashboard's hovered rows</title>
+<style>
+ body{font:15px/1.55 system-ui,sans-serif;max-width:60rem;margin:2rem auto;padding:0 1rem;color:#111}
+ h1{font-size:1.5rem} h2{font-size:1rem;font-family:ui-monospace,monospace;margin:2rem 0 .4rem;color:#004080}
+ pre{background:#f6f7f9;border:1px solid #d8dbe0;border-left:3px solid #004080;padding:.8rem;
+     white-space:pre-wrap;word-wrap:break-word;font:13px/1.5 ui-monospace,monospace}
+ .note{background:#fffbe6;border:1px solid #e8d98a;padding:.7rem;font-size:.9rem}
+ .intro{border:1px solid #c9ced6;border-radius:4px;padding:.2rem 1rem 1rem;margin:1.5rem 0}
+ .unverified{background:#fdecea;border:1px solid #e0a6a0;padding:.6rem;font-size:.9rem;margin:1rem -.4rem}
+ table{border-collapse:collapse;margin:.6rem 0} th,td{border:1px solid #d8dbe0;padding:.35rem .6rem;
+ text-align:left;font-size:.92rem;vertical-align:top} th{background:#f0f2f5}
+</style></head><body>
+<h1>DEF-191 - the dashboard's hovered rows</h1>
+<p class="note">Every block below is quoted <b>verbatim</b> in one process from the tamheed exports under
+<code>tamheed-package/exports/</code>, written by the MCP tool <code>entity_export</code> (package digest
+<code>3438672ec93db46908f84faa2ff971680fe77810726513ea7f421baf7b95999a</code> &mdash; <code>package_verify()</code> returning the same value means nothing has
+changed since), or from the working tree, and each was re-read from its own source
+and confirmed byte-identical after this page was written. Nothing here was re-typed (<code>LL-001</code>,
+<code>LL-011</code>). <b>Provenance is guaranteed; correctness is not</b> — whether a quoted claim is true is
+part of what is being asked. The connective prose around these blocks carries no such guarantee
+(<code>LL-023</code>).</p>
+<div class="intro"><p class="unverified"><b>The section below is the agent's own framing, not a
+quotation.</b> Nothing in it carries the provenance guarantee the blocks beneath it do; check any claim in it
+against those blocks.</p>
+<p>DEF-191, 2026-09-15. Every record and file excerpt below is quoted by the generator. This paragraph is the
+only text on the page that is not. The ratios in <code>DEF-191</code> are the agent's calculation. Axe never hovers,
+so no sweep has measured them.</p>
+<p>Calibrating <code>AC-173</code>'s opacity guard found one more partial opacity on content: hovering a row in the
+dashboard's keyed lists (quoted CSS, the last line). <code>AC-173</code>'s text (quoted) exempts hover states from the
+guard, so it is not flagged, and it is outside <code>AC-173</code>'s six states. The <code>AC-173</code> build itself
+is done and committed on the branch, not yet pushed.</p>
+<p>The question is what happens to <code>DEF-191</code>.</p>
+</div>
+<h2>DEF-191  [defect]</h2>
+<pre>id: DEF-191
+title: HOVERING A ROW IN THE DASHBOARD'S KEYED LISTS DROPS ITS TEXT BELOW WCAG AA IN THE LIGHT THEME: `.dash-keylist a:hover { opacity: 0.78 }` (`features/dashboard/dashboard.css`) fades the whole row, so the record key (`--accent`, 11px) falls to 3.98:1 and the secondary text (`--text-2`) to 3.80:1 on `--surface`, against 4.5:1 (`NFR-033`; WCAG 1.4.3 applies in every state but the inactive one). Dark theme passes (5.03 / 4.93). Found 2026-09-15 while calibrating `AC-173`'s opacity guard, which lists every partial-opacity rule in the stylesheets: 23 in all - 19 disabled controls, 2 keyframes, 1 drag, 1 decorative icon, and this one hover. `AC-173`'s text exempts hover and drag states from the guard, so the guard does not flag it, and axe's sweep never hovers, so no instrument sees it. Computed (group opacity over `--surface`), not measured by axe.
+severity: low
+lifecycle_status: Open
+found_in: SL-043
+custom_attributes: {"found_by":"calibration listing of AC-173's opacity guard (scratch list-opacity.mjs over src/**/*.css), 2026-09-15","measured":"light: accent 3.98, text 7.73, text-2 3.80, text-3 3.45; dark: accent 5.03, text 9.12, text-2 4.93, text-3 3.63 (row text at 0.78 over --surface)","related":"NFR-033, AC-173 (hover exempt from its guard), DEF-190, ADR-0045."}
+last_referenced: 2026-09-15T15:56:38Z</pre>
+<h2>AC-173  [acceptance-criterion]</h2>
+<pre>id: AC-173
+title: **Given** the SPA in the E2E stack, and a record put - through the API, or the UI where the state is a view - into five of the six states `DEF-190` names: a deprecated or superseded ADR, a retired invariant, a superseded decision, a closed vote, the Actions register with the Overdue filter on, and the impact graph with its blocked or cross-stream highlight on &lt;br&gt; **When** the accessibility sweep runs on a pull request &lt;br&gt; **Then** axe-core's `color-contrast` rule reports ZERO violations on each of those states in the LIGHT and the DARK theme and in English and in Arabic, in both browser projects, and each check first proves the state rendered (the state's own marker is on the page) and that the rule evaluated the formerly dimmed element; **And** none of the six states dims its content with CSS `opacity`: each is muted with design tokens whose pairs the token contrast test holds at AA (`ADR-0045`: AA governs); **And** a unit test reads every stylesheet and fails, naming the rule, when a rule sets `opacity` between 0 and 1 on anything other than a disabled control (`DEC-199` h2), a hover or drag state, an animation keyframe or a decorative icon - any other exception listed in the test with its reason. The sixth state, SUPERSEDED MINUTES, is never on screen - the minutes page shows the newest version and superseding always publishes a successor - so the sweep has no state to open and its rule is covered by the unit test alone. **Verified by** the sweep and the unit test in CI; and a control in which one of the swept rules gets its `opacity` back and both the sweep and the unit test fail, naming the state and the rule.
+statement: **Given** the SPA in the E2E stack, and a record put - through the API, or the UI where the state is a view - into five of the six states `DEF-190` names: a deprecated or superseded ADR, a retired invariant, a superseded decision, a closed vote, the Actions register with the Overdue filter on, and the impact graph with its blocked or cross-stream highlight on &lt;br&gt; **When** the accessibility sweep runs on a pull request &lt;br&gt; **Then** axe-core's `color-contrast` rule reports ZERO violations on each of those states in the LIGHT and the DARK theme and in English and in Arabic, in both browser projects, and each check first proves the state rendered (the state's own marker is on the page) and that the rule evaluated the formerly dimmed element; **And** none of the six states dims its content with CSS `opacity`: each is muted with design tokens whose pairs the token contrast test holds at AA (`ADR-0045`: AA governs); **And** a unit test reads every stylesheet and fails, naming the rule, when a rule sets `opacity` between 0 and 1 on anything other than a disabled control (`DEC-199` h2), a hover or drag state, an animation keyframe or a decorative icon - any other exception listed in the test with its reason. The sixth state, SUPERSEDED MINUTES, is never on screen - the minutes page shows the newest version and superseding always publishes a successor - so the sweep has no state to open and its rule is covered by the unit test alone. **Verified by** the sweep and the unit test in CI; and a control in which one of the swept rules gets its `opacity` back and both the sweep and the unit test fail, naming the state and the rule.
+requirement_id: NFR-033
+slice_id: SL-043
+lifecycle_status: Approved
+introduced_in: 1
+source_kind: clarification
+source_span: DEC-200 i1; DEF-190; written before the build per SC-075.
+custom_attributes: {"premise_check_2026_09_15":"Before the operator saw it, the agent checked the draft's premises and changed two: (1) graph nodes dim when the blocked or cross-stream highlight toggle is on (graphLayout.ts: dim = anyHi &amp;&amp; !isFocus &amp;&amp; !matches), not when 'a node is highlighted'; (2) superseded minutes are never displayed - MeetingMinutes renders list.data[0], GetMinutesForMeeting orders by Version descending, and SupersedeMinutes publishes a successor at Version+1 - so .mom-doc-muted is unreachable and the sweep cannot open that state, contrary to DEC-200 i1's 'the sweep opens each of them'."}
+last_referenced: 2026-09-15T15:56:38Z</pre>
+<h2>src/Acmp.Web/src/features/dashboard/dashboard.css:177-191</h2>
+<pre>.dash-keylist a {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 0;
+  text-decoration: none;
+  color: inherit;
+}
+.dash-keylist a:hover { opacity: 0.78; }
+.dash-key {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--accent);
+  flex: 0 0 auto;
+}</pre>
+</body></html>

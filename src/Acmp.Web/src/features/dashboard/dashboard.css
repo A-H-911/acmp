@@ -182,7 +182,9 @@
   text-decoration: none;
   color: inherit;
 }
-.dash-keylist a:hover { opacity: 0.78; }
+/* DEF-191 (DEC-201): the hover used to fade the row to opacity 0.78, taking the key to 3.98:1 and the secondary
+   text to 3.80:1 in the light theme. It gets the subtle fill instead, on which every line keeps its AA pair. */
+.dash-keylist a:hover { background: var(--subtle); }
 .dash-key {
   font-family: var(--mono);
   font-size: 11px;

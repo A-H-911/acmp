@@ -385,8 +385,17 @@
   box-shadow: var(--shadow);
   padding: 16px 17px;
 }
+/* DEF-188 (ADR-0045: AA governs). The design dims an unmonitored service or an inactive channel with opacity
+   0.62, which took the tile's status chip to 2.9:1 and its muted lines under 3:1. The tile is muted with tokens
+   instead - the subtle fill, no shadow, a quieter icon - so every line inside keeps a pair contrast.test.ts
+   holds at AA. */
 .adm-tile-muted {
-  opacity: 0.62;
+  background: var(--subtle);
+  box-shadow: none;
+}
+.adm-tile-muted .adm-tile-icon {
+  background: var(--sunken);
+  color: var(--text-3);
 }
 .adm-tile-head {
   display: flex;
