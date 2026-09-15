@@ -2,8 +2,12 @@ import { test, expect, type Page } from '@playwright/test';
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import { loginAs } from './login';
-import { captureBearer } from './apiHelpers';
-import { apiAddAgendaItem, apiCreateTopic, apiMembers, apiPreparedTopic, apiScheduleMeeting } from './scenario';
+import { captureBearer, meMember } from './apiHelpers';
+import {
+  apiAddAgendaItem, apiConfigureVote, apiCreateAction, apiCreateTopic, apiMembers, apiPreparedTopic, apiRecordDecision,
+  apiScheduleMeeting,
+} from './scenario';
+import { A11Y_ROUTES, type A11yPrincipal } from '../src/test/a11yRoutes';
 
 /*
  * S6b-3 (ADR-0016 §2) — the RTL/Arabic + accessibility pass, the last E2E slice. Proves the real
@@ -45,60 +49,136 @@ async function switchToArabic(page: Page): Promise<void> {
 }
 
 /*
- * ROUTE COVERAGE (operator decision, 2026-09-01, after DEF-126).
+ * ROUTE COVERAGE - AC-170 (WBS-40.6, DEC-196), which grew out of the operator decision of 2026-09-01 (DEF-126).
  *
- * ⛔ THE GAP THIS CLOSES WAS FOUND BY ACCIDENT AND IS STRUCTURAL. DEF-126 surfaced because /meetings had
- * NO accessibility test at all — an EXISTING route, not a new one. DW-071's trigger fires "whenever a new
- * route ships", so every route that shipped before that trigger was written is outside it by construction.
- * Measured against App.tsx's route tree: 46 Route declarations, of which this spec reached five.
+ * ⛔ THE LIST IS NOT HERE ANY MORE, AND THAT IS THE POINT. The routes come from src/test/a11yRoutes.ts, which
+ * src/test/a11yRouteCoverage.test.ts compares with App.tsx's own route table: a route added to the app and not
+ * to the manifest fails THAT test by name, so this sweep cannot quietly fall behind the app again. Before
+ * AC-170 this file held a hand-kept list of 17 routes and reached 23 static routes in all; the parameterised
+ * routes (topics/:key, meetings/:key and its tabs, decisions/:key, ...) were excluded because each needs a
+ * seeded record. They are now opened on records seedRecords() creates first.
  *
  * WHY ONE TEST PER LOCALE RATHER THAN ONE PER ROUTE. An audit wants the WHOLE picture from one run: a
  * per-route test stops the suite at the first offender and each CI cycle then reveals exactly one more.
- * Collecting a route→violations map and asserting it empty names every offending route at once, which is
- * what makes a single cycle worth its twenty minutes.
- *
- * ⚠ WHAT IS DELIBERATELY NOT COVERED, so the list does not read as complete: PARAMETERISED routes
- * (topics/:key, meetings/:key and its six children, decisions/:key, votes/:key, actions/:key, adrs/:key,
- * invariants/:key, risks/:key, dependencies/:key, research/:key, wiki/:key, traceability/:type/:key) need
- * seeded entities and a key per route, which is a different piece of work. `dashboard` is a Navigate to
- * `/` and `*` is the not-found page.
+ * Collecting a route->violations map and asserting it empty names every offending route at once.
  */
-const SECRETARY_ROUTES = [
-  '/', // index — the dashboard
-  '/notifications',
-  '/session',
-  '/meetings/new',
-  '/decisions',
-  '/actions',
-  '/adrs',
-  '/invariants',
-  '/risks',
-  '/dependencies',
-  '/research',
-  '/wiki',
-  '/templates',
-  '/diagrams',
-  '/reports',
-  '/search',
-  '/members',
-];
+
+/** One place the sweep stops: the URL, and for a seeded record the text that proves the RECORD rendered. */
+interface Stop {
+  url: string;
+  subject?: string;
+}
 
 /**
- * Visit each route, prove it actually rendered, and collect its violations.
+ * Seed one record of every kind the parameterised routes open, and map each pattern to its URL.
  *
- * ⛔ THE `#main` WAIT IS THE SUBJECT CLAUSE (DEF-126, LL-041). Without it a route that redirected to
- * login, or rendered nothing, would be swept and reported clean — the exact failure that let the calendar
- * sweep pass over an empty grid for weeks. `#main` is AppShell's own landmark, so it is present only when
- * the authenticated shell actually rendered the route.
+ * ⛔ A parameterised route that renders its "not found" state still renders the shell and #main, so the #main
+ * wait alone would sweep an empty page and call it clean (LL-041, DEF-126). Each stop therefore carries a
+ * SUBJECT - the record's key - that must be on the page before axe runs.
  */
-async function violationsByRoute(page: Page, routes: readonly string[]): Promise<Record<string, Violation[]>> {
+async function seedRecords(page: Page): Promise<Record<string, Stop>> {
+  const bearer = await captureBearer(page);
+  const me = await meMember(page, bearer);
+  const H = { Authorization: bearer, 'Content-Type': 'application/json' };
+  const post = async (url: string, data: unknown): Promise<{ id: string; key: string }> => {
+    const res = await page.request.post(url, { headers: H, data });
+    if (!res.ok()) throw new Error(`[a11y seed] POST ${url} ${res.status()} ${await res.text()}`);
+    return res.json();
+  };
+  const L = (s: string) => ({ en: s, ar: s });
+  const stamp = Date.now().toString(36);
+
+  const topic = await apiCreateTopic(page.request, bearer, `A11y sweep topic ${stamp}`);
+  const prepared = await apiPreparedTopic(page.request, bearer, `A11y sweep prepared ${stamp}`, me);
+  const meeting = await apiScheduleMeeting(page.request, bearer, `A11y sweep meeting ${stamp}`, me);
+  await apiAddAgendaItem(page.request, bearer, meeting.id, prepared, me);
+  const decision = await apiRecordDecision(page.request, bearer, {
+    topicId: topic.id, title: `A11y sweep decision ${stamp}`, statement: 'Sweep statement.', rationale: 'Sweep rationale.',
+  });
+  const vote = await apiConfigureVote(page.request, bearer, {
+    topicId: topic.id, eligibleVoters: [{ userId: me.keycloakUserId, name: me.fullName }],
+  });
+  const action = await apiCreateAction(page.request, bearer, {
+    title: `A11y sweep action ${stamp}`, ownerUserId: me.keycloakUserId, ownerName: me.fullName, sourceId: topic.id, dueDate: '2026-12-01',
+  });
+  const adr = await post('/api/adrs', {
+    title: L(`A11y sweep ADR ${stamp}`), context: L('Sweep context'), decisionDrivers: null, decisionText: L('Sweep decision'),
+    consequencesPositive: null, consequencesNegative: null, options: null,
+  });
+  const invariant = await post('/api/invariants', {
+    category: 'Security', scope: 'Platform', statement: L(`A11y sweep invariant ${stamp}`), rationale: L('Sweep rationale'),
+    exceptionsPolicy: null, ownerUserId: me.keycloakUserId, ownerName: me.fullName,
+  });
+  const risk = await post('/api/risks', {
+    title: L(`A11y sweep risk ${stamp}`), description: null, likelihood: 'High', impact: 'Medium',
+    ownerUserId: me.keycloakUserId, ownerName: me.fullName, subjectType: 'Topic', subjectId: topic.id,
+    subjectKey: topic.key, initialMitigation: L('Sweep mitigation'),
+  });
+  const dependency = await post('/api/dependencies', {
+    fromType: 'Topic', fromId: topic.id, fromKey: topic.key, fromTitle: topic.title,
+    toType: 'Action', toId: action.id, toKey: action.key, toTitle: `A11y sweep action ${stamp}`,
+    kind: 'BlockedBy', note: null,
+  });
+  const mission = await post('/api/research', {
+    title: L(`A11y sweep mission ${stamp}`), question: L('Does the sweep reach the research page?'),
+  });
+  const doc = await post('/api/knowledge/documents', {
+    title: L(`A11y sweep page ${stamp}`), category: 'Governance', body: L('Sweep body.'), tags: [],
+  });
+
+  const m = `/meetings/${meeting.key}`;
+  return {
+    '/session/preview': { url: `/session/preview?meetingId=${meeting.id}&topicId=${prepared.id}`, subject: prepared.title },
+    '/topics/:key': { url: `/topics/${topic.key}`, subject: topic.key },
+    '/topics/:key/edit': { url: `/topics/${topic.key}/edit`, subject: topic.key },
+    '/meetings/:key': { url: m, subject: meeting.key },
+    '/meetings/:key/agenda': { url: `${m}/agenda`, subject: meeting.key },
+    '/meetings/:key/attendance': { url: `${m}/attendance`, subject: meeting.key },
+    '/meetings/:key/notes': { url: `${m}/notes`, subject: meeting.key },
+    '/meetings/:key/minutes': { url: `${m}/minutes`, subject: meeting.key },
+    '/meetings/:key/recording': { url: `${m}/recording`, subject: meeting.key },
+    '/decisions/:key': { url: `/decisions/${decision.key}`, subject: decision.key },
+    '/votes/:key': { url: `/votes/${vote.key}`, subject: vote.key },
+    '/actions/:key': { url: `/actions/${action.key}`, subject: action.key },
+    '/adrs/:key': { url: `/adrs/${adr.key}`, subject: adr.key },
+    '/invariants/:key': { url: `/invariants/${invariant.key}`, subject: invariant.key },
+    '/risks/:key': { url: `/risks/${risk.key}`, subject: risk.key },
+    '/dependencies/:key': { url: `/dependencies/${dependency.key}`, subject: dependency.key },
+    '/traceability/:type/:key': { url: `/traceability/Topic/${topic.key}`, subject: topic.key },
+    '/research/:key': { url: `/research/${mission.key}`, subject: mission.key },
+    '/wiki/:key': { url: `/wiki/${doc.key}`, subject: doc.key },
+  };
+}
+
+/** The manifest's routes for one principal, each resolved to a place to stop. A parameterised pattern with no
+ *  seeded record is an error, never a skip: a route the sweep silently cannot reach is the gap AC-170 closes. */
+function stopsFor(as: A11yPrincipal, seeded: Record<string, Stop> = {}): Stop[] {
+  return A11Y_ROUTES.filter((r) => r.as === as).map((r) => {
+    if (seeded[r.pattern]) return seeded[r.pattern];
+    if (r.pattern.includes(':')) throw new Error(`[a11y] no seeded record for ${r.pattern} - add it to seedRecords()`);
+    return { url: r.pattern };
+  });
+}
+
+/**
+ * Visit each stop, prove it rendered, and collect its violations.
+ *
+ * ⛔ THE `#main` WAIT IS THE SUBJECT CLAUSE (DEF-126, LL-041). Without it a route that redirected to login, or
+ * rendered nothing, would be swept and reported clean. `#main` is AppShell's own landmark, so it is present
+ * only when the authenticated shell actually rendered the route - and a seeded stop must also show its record.
+ */
+async function violationsByRoute(page: Page, stops: readonly Stop[]): Promise<Record<string, Violation[]>> {
   const offenders: Record<string, Violation[]> = {};
-  for (const route of routes) {
-    await page.goto(route);
-    await expect(page.locator('#main')).toBeVisible();
+  for (const stop of stops) {
+    await page.goto(stop.url);
+    await expect(page.locator('#main'), `${stop.url} rendered the shell`).toBeVisible();
+    if (stop.subject) await expect(page.locator('#main'), `${stop.url} shows its record`).toContainText(stop.subject);
     const violations = await axeViolations(page);
-    if (violations.length > 0) offenders[route] = violations;
+    if (violations.length > 0) offenders[stop.url] = violations;
   }
+  // The sweep reports on itself (LL-060): the report shows how many routes each run actually visited, so a
+  // green result that swept nothing cannot read like one that swept everything.
+  test.info().annotations.push({ type: 'a11y-routes-swept', description: `${stops.length}: ${stops.map((s) => s.url).join(' ')}` });
   return offenders;
 }
 
@@ -301,40 +381,59 @@ test.describe('S6b-3 — RTL/Arabic + accessibility', () => {
     expect(await axeViolations(page), 'Meetings calendar (AR/RTL) axe violations').toEqual([]);
   });
 
-  // ---- route coverage (operator decision, 2026-09-01) ----
-  // These carry their own timeout: seventeen full page loads plus an axe pass each is well past
-  // Playwright's default, and a sweep that dies on the default timeout reports nothing at all.
+  // ---- route coverage: AC-170 (WBS-40.6, DEC-196) ----
+  // Driven by src/test/a11yRoutes.ts. These carry their own timeout: forty-odd full page loads plus an axe
+  // pass each is well past Playwright's default, and a sweep that dies on the default timeout reports nothing.
 
-  test('every static Secretary-reachable route is axe-clean in English', async ({ page }) => {
-    test.setTimeout(300_000);
+  test('every Secretary route, static and parameterised, is axe-clean in English', async ({ page }) => {
+    test.setTimeout(420_000);
     await loginAs(page, 'secretary');
-    const offenders = await violationsByRoute(page, SECRETARY_ROUTES);
-    expect(offenders, `axe violations by route (EN), ${SECRETARY_ROUTES.length} routes swept`).toEqual({});
+    const stops = stopsFor('secretary', await seedRecords(page));
+    const offenders = await violationsByRoute(page, stops);
+    expect(offenders, `axe violations by route (EN), ${stops.length} routes swept`).toEqual({});
   });
 
-  test('every static Secretary-reachable route is axe-clean in Arabic/RTL', async ({ page }) => {
-    test.setTimeout(300_000);
+  test('every Secretary route, static and parameterised, is axe-clean in Arabic/RTL', async ({ page }) => {
+    test.setTimeout(420_000);
     await loginAs(page, 'secretary');
-    // Switch once on a route known to carry the toggle, then sweep — the locale is persisted, so
-    // flipping per route would add seventeen redundant round trips.
+    const seeded = await seedRecords(page);
+    // Switch once on a route known to carry the toggle, then sweep - the locale is persisted, so flipping per
+    // route would add forty redundant round trips.
     await page.goto('/backlog');
     await switchToArabic(page);
-    const offenders = await violationsByRoute(page, SECRETARY_ROUTES);
-    expect(offenders, `axe violations by route (AR/RTL), ${SECRETARY_ROUTES.length} routes swept`).toEqual({});
+    const stops = stopsFor('secretary', seeded);
+    const offenders = await violationsByRoute(page, stops);
+    expect(offenders, `axe violations by route (AR/RTL), ${stops.length} routes swept`).toEqual({});
   });
 
-  // The admin area needs its own login: RequireRole gates /admin on `administrator` alone, so the
-  // Secretary the rest of this spec uses would be bounced and the sweep would prove nothing.
-  test('the administration route is axe-clean in both English and Arabic', async ({ page }) => {
+  // The admin area needs its own login: RequireRole gates /admin on `administrator` alone, so the Secretary the
+  // rest of this spec uses would be bounced and the sweep would prove nothing.
+  test('every Administrator route is axe-clean in both English and Arabic', async ({ page }) => {
     test.setTimeout(120_000);
     await loginAs(page, 'administrator');
-
-    await page.goto('/admin/users');
-    await expect(page.locator('#main')).toBeVisible();
-    expect(await axeViolations(page), 'Administration (EN) axe violations').toEqual([]);
+    const stops = stopsFor('administrator');
+    expect(await violationsByRoute(page, stops), 'Administration (EN) axe violations').toEqual({});
 
     await switchToArabic(page);
-    await expect(page.locator('#main')).toBeVisible();
-    expect(await axeViolations(page), 'Administration (AR/RTL) axe violations').toEqual([]);
+    expect(await violationsByRoute(page, stops), 'Administration (AR/RTL) axe violations').toEqual({});
+  });
+
+  // The sign-in page is the one screen a person sees signed OUT, so it is opened with no session at all. It has
+  // no AppShell (#main), so its own call to action is the proof that it rendered.
+  test('the signed-out sign-in page is axe-clean in both English and Arabic', async ({ page }) => {
+    const stops = stopsFor('signedOut');
+    const offenders: Record<string, Violation[]> = {};
+    for (const stop of stops) {
+      for (const lang of ['en', 'ar'] as const) {
+        await page.goto(stop.url);
+        await page.evaluate((l) => localStorage.setItem('i18nextLng', l), lang);
+        await page.reload();
+        await expect(page.locator('html')).toHaveAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+        await expect(page.locator('.login-cta')).toBeVisible();
+        const violations = await axeViolations(page);
+        if (violations.length > 0) offenders[`${stop.url} (${lang})`] = violations;
+      }
+    }
+    expect(offenders, `axe violations signed out, ${stops.length} route(s) x 2 languages`).toEqual({});
   });
 });

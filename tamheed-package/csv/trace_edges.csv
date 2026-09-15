@@ -851,6 +851,9 @@ SC-071,AC-167,scope_adds
 SC-071,AC-168,scope_adds
 SC-071,AC-169,scope_adds
 SC-071,WBS-40.29,scope_adds
+SC-072,AC-170,scope_adds
+SC-072,WBS-40.6,scope_modifies
+SC-072,WBS-40.9,scope_modifies
 SL-037,DEC-132,relates_to
 TEST-001,FR-016,tests
 TEST-001,FR-017,tests

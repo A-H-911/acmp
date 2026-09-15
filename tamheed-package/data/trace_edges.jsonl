@@ -850,6 +850,9 @@
 {"from_id":"SC-071","to_id":"AC-168","relation":"scope_adds"}
 {"from_id":"SC-071","to_id":"AC-169","relation":"scope_adds"}
 {"from_id":"SC-071","to_id":"WBS-40.29","relation":"scope_adds"}
+{"from_id":"SC-072","to_id":"AC-170","relation":"scope_adds"}
+{"from_id":"SC-072","to_id":"WBS-40.6","relation":"scope_modifies"}
+{"from_id":"SC-072","to_id":"WBS-40.9","relation":"scope_modifies"}
 {"from_id":"SL-037","to_id":"DEC-132","relation":"relates_to"}
 {"from_id":"TEST-001","to_id":"FR-016","relation":"tests"}
 {"from_id":"TEST-001","to_id":"FR-017","relation":"tests"}
