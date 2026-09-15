@@ -118,7 +118,7 @@
 <div class="wrap">
   <header class="masthead">
     <p class="kicker">ACMP · lessons register · operator confirmation</p>
-    <h1>2 lessons are waiting on your word</h1>
+    <h1>1 lessons are waiting on your word</h1>
     <p class="standfirst">Each was recorded by the executing agent after execution taught it something. None of them binds anything yet. Only the ones you approve will.</p>
   </header>
 
@@ -143,14 +143,8 @@
       </thead>
       <tbody>
         <tr>
-          <td class="id">LL-084</td>
-          <td>THE INSTANCE. `WBS-40.8`, 2026-09-15. With axe's `color-contrast` rule switched on, the unmonitored admin tile's chip failed at 2.91:1 in English and PASSED in …</td>
-          <td class="mono">improve</td>
-          <td class="mono">process</td>
-        </tr>
-        <tr>
-          <td class="id">LL-085</td>
-          <td>THE INSTANCE. `AC-173`'s control, 2026-09-15: the six formerly dimmed rules got their `opacity` back and the sweep re-ran. In the light theme every state failed…</td>
+          <td class="id">LL-086</td>
+          <td>THE INSTANCE. `DEF-192`, found 2026-09-15 while checking `WBS-40.27`'s premises before an interview. `ADR-0046` d2 (carried into `ADR-0047`) told Dependabot not…</td>
           <td class="mono">improve</td>
           <td class="mono">process</td>
         </tr>
@@ -158,76 +152,44 @@
     </table>
   </div>
 
-      <article class="motion" id="LL-084">
+      <article class="motion" id="LL-086">
         <header class="motion-head">
           <div class="eyebrow">
-            <span class="id">LL-084</span>
+            <span class="id">LL-086</span>
             <span class="chip chip-kind">improve</span>
             <span class="chip">process</span>
             <span class="chip chip-pending">Proposed</span>
           </div>
-          <h2>A SCANNER CAN DROP A WHOLE SCRIPT WITHOUT SAYING SO. BEFORE TRUSTING A SWEEP IN A SECOND LANGUAGE, COUNT WHAT THE RULE ACTUALLY EVALUATED IN EACH LANGUAGE, AND MAKE THE SWEEP ASSERT THAT ITS ARABIC LEG LOOKED AT ARABIC TEXT.</h2>
+          <h2>A PR THAT DOES NOT APPEAR IS NOT EVIDENCE THAT A DEPENDABOT RULE WORKS: DEPENDABOT REMEMBERS CLOSED PRs, SO READ THE UPDATE JOB'S LOG. AND FOR DOCKER, `dependency-name` IS THE REPOSITORY PATH WITHOUT THE REGISTRY HOST.</h2>
         </header>
         
         <div class="field">
           <h3>The lesson</h3>
-          <p>THE INSTANCE. `WBS-40.8`, 2026-09-15. With axe's `color-contrast` rule switched on, the unmonitored admin tile's chip failed at 2.91:1 in English and PASSED in Arabic, on the same page with the same records. Not a violation, not 'incomplete' - absent. Counting the rule's evaluated nodes gave English 56, Arabic 25. Reading axe-core 4.13's source explained it: the rule only tests an element whose text is not an 'icon ligature', and the ligature test compares the first character drawn alone with the whole string; Arabic letters change shape when joined, so Arabic words look like ligatures, and after three hits the verdict is cached for the whole font family, taking Latin text in the Arabic font with it (`DEF-189`). Every Arabic axe pass this project ran before had `color-contrast` off, so nothing had ever shown it. The fix seeds axe's per-font cache before each run (the app has no icon fonts) and the sweep now fails by name if an Arabic page evaluates no Arabic text - and the control proved it: the Arabic admin sweeps turned red on the same chip the English ones caught.</p>
+          <p>THE INSTANCE. `DEF-192`, found 2026-09-15 while checking `WBS-40.27`'s premises before an interview. `ADR-0046` d2 (carried into `ADR-0047`) told Dependabot not to propose SQL Server 2025, with `dependency-name: mcr.microsoft.com/mssql/server`, and made the proof *two weekly runs with no 2025 PR*. `PE-984` counted the first such run as the first observation. The update job logs (Actions runs 34135777836 and 34483380925, event `dynamic`) showed the ignore loaded, then `Latest version is 2025-latest` and `Pull request #135 already exists for mssql/server`: the ignore never matched, because Dependabot names the image `mssql/server`, and the PR stayed away only because closed PR #135 was remembered. GitHub's options reference confirms that a Docker `dependency-name` drops the registry host. After the fix (PR #418), the log of the run the merge triggered (35023132379) showed the corrected entry, the image still checked, `Latest version is 2022-latest`, and a CU digest PR (#420), so the rule neither leaked nor over-blocked.</p>
         </div>
         <div class="field">
           <h3>What to do instead</h3>
-          <p>(1) When a check passes in one language and fails in another on the same page, suspect the instrument before the page: count what the rule evaluated in each (passes + violations + incomplete), not only what it reported. (2) Give every per-language sweep a subject clause for that language - e.g. at least one evaluated node carrying Arabic text - so a rule that silently stops looking fails instead of passing. (3) When a scanner's heuristic is disabled or steered through internal API, make the subject clause the tripwire for a future version that stops honouring it.</p>
+          <p>(1) Prove a Dependabot `ignore` from the update job's log (`gh api repos/{owner}/{repo}/actions/runs?event=dynamic`, then `gh run view &lt;id&gt; --log`): check the entry in `ignore-conditions`, the `Checking if &lt;dep&gt; ... needs updating` line, and the `Latest version is ...` line. Never prove it from the absence of a PR. (2) Write the `dependency-name` the way the job log names the dependency; for Docker that is the repository path without the host (`mssql/server`, `dotnet/aspnet`). (3) A change to `dependabot.yml` on the default branch triggers update jobs within minutes, so the proof does not have to wait for the weekly schedule.</p>
         </div>
         <div class="field">
           <h3>Why it generalises</h3>
-          <p>A scanner reports on what it chose to examine. Its skip logic is invisible in its output, so a green result in a second language can mean 'clean' or 'not looked at', and only a count of what was examined tells them apart (`LL-060`: an instrument must report on itself).</p>
+          <p>An absence has more than one cause, and here the visible cause (the rule) was not the real one (a remembered PR). The job log is the instrument that reports which cause acted (`LL-060`, `LL-013`).</p>
         </div>
         <div class="field">
           <h3>If followed</h3>
-          <p>A bilingual accessibility sweep is known to have examined both languages, and a scanner upgrade that goes blind fails loudly.</p>
+          <p>A dependency rule is verified the day it lands, from the line that decides it, and a rule that never matched is caught before a new major version slips through.</p>
         </div>
         <div class="field">
           <h3>If ignored</h3>
-          <p>The Arabic half of an accessibility criterion is recorded Met on a pass that examined less than half the page, and contrast failures in the Arabic UI ship unseen.</p>
-        </div>
-      </article>
-      <article class="motion" id="LL-085">
-        <header class="motion-head">
-          <div class="eyebrow">
-            <span class="id">LL-085</span>
-            <span class="chip chip-kind">improve</span>
-            <span class="chip">process</span>
-            <span class="chip chip-pending">Proposed</span>
-          </div>
-          <h2>WHEN A CONTROL PASSES WHERE THE ARITHMETIC SAYS IT MUST FAIL, THE FINDING IS ABOUT THE INSTRUMENT. A RENDERED CHECK CAN READ A COLOUR MID-TRANSITION, AND AN 'INCOMPLETE' RESULT IS NOT AN EVALUATION: WAIT FOR TRANSITIONS BEFORE MEASURING, AND COUNT ONLY DECIDED RESULTS TOWARDS A SUBJECT CLAUSE.</h2>
-        </header>
-        
-        <div class="field">
-          <h3>The lesson</h3>
-          <p>THE INSTANCE. `AC-173`'s control, 2026-09-15: the six formerly dimmed rules got their `opacity` back and the sweep re-ran. In the light theme every state failed; in the dark theme the impact graph's dimmed nodes - `opacity: 0.3`, computed at about 2:1 - PASSED. The agent did not accept the pass. A standalone probe of the same page a moment later measured 2.34:1 in dark, and two causes surfaced: (1) `.ig-node` transitions `opacity` over 0.15s, and the sweep ran axe the instant the class appeared, so it measured a node still fading; (2) two of the node's texts came back 'incomplete' (axe could not find their background over the graph's SVG edge layer), and the sweep's subject clause - 'the rule evaluated the formerly dimmed element' - counted incomplete as evaluated. With a wait for running CSS transitions and a subject count of passed-or-failed only, the same control failed in dark as well (1.84, 1.89).</p>
-        </div>
-        <div class="field">
-          <h3>What to do instead</h3>
-          <p>(1) Before a control, write down what it must show - here a computed ratio - so a pass that contradicts the arithmetic is noticed rather than welcomed. (2) Before any rendered colour check, wait until no CSS transition is running (document.getAnimations() filtered to CSSTransition); infinite keyframe animations are a separate case. (3) In a scanner's results, treat 'incomplete' / 'needs review' as 'not determined': never let it satisfy a clause that says the element was checked.</p>
-        </div>
-        <div class="field">
-          <h3>Why it generalises</h3>
-          <p>A rendered check measures the frame it is given and a scanner reports what it could decide; neither says so when it measured a transient frame or decided nothing. Only a control with a predicted outcome exposes that (`LL-060`, `LL-084`).</p>
-        </div>
-        <div class="field">
-          <h3>If followed</h3>
-          <p>Contrast checks measure the resting state, and a subject clause cannot be satisfied by a result that decided nothing.</p>
-        </div>
-        <div class="field">
-          <h3>If ignored</h3>
-          <p>A sweep passes on a state it caught mid-animation, or on elements it could not evaluate, and a real failure ships with a green check against it.</p>
+          <p>A rule that does nothing is recorded as verified, and the next major tag that no closed PR covers is proposed with nothing in place to stop it.</p>
         </div>
       </article>
 
   <footer>
     Generated from the tamheed export tamheed-package/exports/lessons.json, written by the MCP tool
     <code>entity_export</code>, by scripts/gen-lesson-docket.mjs.<br>
-    Package digest at export: <code>d7a30eeb62a84d37866867058e753794e88c8645b501202035b8e019651376b1</code> &mdash; run <code>package_verify()</code>; the same
+    Package digest at export: <code>0ed2c1d1503ba759780a1e6cfd7378e8b1688f79b4d44c48e459e318a79c6546</code> &mdash; run <code>package_verify()</code>; the same
     digest means nothing has changed since this page was generated.<br>
-    2 of 85 rows in the register are Proposed; the rest are Approved or Superseded and are not on this docket.
+    1 of 86 rows in the register are Proposed; the rest are Approved or Superseded and are not on this docket.
   </footer>
 </div>

@@ -558,3 +558,14 @@ SC-075,DEC-200,"**`WBS-40.8` ALSO FIXES `DEF-190`, UNDER A NEW CRITERION `AC-173
 **HOW THE ROWS CLOSE.** `WBS-40.8` is done-claimed on `AC-172` and `AC-173` Met; `DEF-188` and `DEF-190` close Fixed with it.
 
 **APPLICATION ORDER (`LL-042`, `SC-074`'s precedent):** this row Approved -> `AC-173` written `Proposed` -> the OPERATOR approves its text -> `AC-173` Approved and `WBS-40.8`'s text applied in one batch -> both re-read -> this row `Merged`.",1,Merged,,
+SC-076,DEC-203,"**`WBS-40.27`'S DONE-CLAIM CHANGES FROM AN ABSENT PR TO A JOB-LOG LINE, AND IT ALSO FIXES `DEF-192`. `ADR-0047` d2 GAINS AN AMENDMENT NOTE (`DEC-203` m1). NO REQUIREMENT'S TEXT CHANGES.**
+
+**WHY A SCOPE CHANGE.** `WBS-40.27`'s approved text is discharged by *two consecutive weekly docker-ecosystem runs with NO PR proposing a major*, and `DEF-192` shows that no PR is proposed while closed PR #135 is remembered whether or not the ignore works. `DEC-203` m3 replaces the criterion; m2 adds the fix to this unit.
+
+**THE NEW TEXT OF `WBS-40.27`:** the current text, followed by: *AMENDED 2026-09-15 BY `SC-076` (`DEC-203`). The ignore never matched: it names `mcr.microsoft.com/mssql/server` and Dependabot names the image `mssql/server`, and the PRs that did not appear were held back by closed PR #135 (`DEF-192`). This item also fixes it: the ignore names `mssql/server` with `versions: ["">= 2023""]`. **DONE-CLAIMED WHEN** the first Dependabot docker `/deploy` job log after the fix is on `main` shows the ignore with the name `mssql/server`, `mssql/server` still checked, and `2025-latest` not chosen as the latest version; `DEF-192` closes `Fixed` on the same log.*
+
+**`ADR-0047`.** A dated amendment note on the row (custom attribute), naming `DEC-203` and this row: d2's quoted ignore is replaced by the m2 entry. The ADR stays `Approved`; no supersession, so no `amends` edge.
+
+**`DW-102`** keeps its text as the record of the original plan; it closes with `WBS-40.27` on the operator's verdict.
+
+**APPLICATION ORDER (`LL-042`):** this row Approved -> `WBS-40.27`'s text and `ADR-0047`'s note applied in one batch -> both re-read -> this row `Merged`.",1,Merged,"{""merged_2026_09_15"":""Applied in the order above: WBS-40.27 and ADR-0047 written in one batch from entity_export payloads (WBS-40.27 guarded on lifecycle_status/phase_id/slice_id/effort/source_kind/source_span/custom_attributes; ADR-0047 on every content column). Re-read: WBS-40.27 re-exported and compared by script to the sent payload, title/status/phase/slice/effort/source_span EQUAL, one-character control DIFFERENT; ADR-0047 Approved, superseded_by null, amendment_2026_09_15_d2 present.""}",2026-09-15T21:21:56Z
