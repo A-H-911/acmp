@@ -479,6 +479,8 @@ LL-080,DEC-172,learned_from
 LL-081,PE-1091,learned_from
 LL-082,DEF-166,learned_from
 LL-083,PE-1151,learned_from
+LL-084,DEF-189,learned_from
+LL-085,DEF-190,learned_from
 NFR-001,ADR-0012,derives_from
 NFR-001,ADR-0016,derives_from
 NFR-002,ADR-0012,derives_from
@@ -860,6 +862,8 @@ SC-073,WBS-40.9,scope_modifies
 SC-074,AC-171,scope_modifies
 SC-074,AC-172,scope_adds
 SC-074,WBS-40.8,scope_modifies
+SC-075,AC-173,scope_adds
+SC-075,WBS-40.8,scope_modifies
 SL-037,DEC-132,relates_to
 TEST-001,FR-016,tests
 TEST-001,FR-017,tests

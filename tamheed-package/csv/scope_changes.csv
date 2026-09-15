@@ -549,3 +549,12 @@ SC-074,DEC-199,"**`AC-172` REPLACES `AC-171` (SUPERSEDED); `WBS-40.8`'S TEXT NAM
 **HOW THE ROWS CLOSE.** `WBS-40.8` is done-claimed on `AC-172` Met; `DEF-186` closes Fixed with it.
 
 **APPLICATION ORDER (`LL-042`, `SC-071`'s precedent):** this row Approved -> `AC-172` written `Proposed` -> the OPERATOR approves its text -> `AC-172` Approved, `AC-171` Superseded (superseded_by `AC-172`, retired_in 1) and `WBS-40.8`'s text applied in one batch -> all re-read -> this row `Merged`.",1,Merged,,
+SC-075,DEC-200,"**`WBS-40.8` ALSO FIXES `DEF-190`, UNDER A NEW CRITERION `AC-173`. NO REQUIREMENT'S TEXT CHANGES.**
+
+**WHY A SCOPE CHANGE.** `WBS-40.8`'s approved text and `AC-172` cover the manifest routes as the sweep opens them; the six states `DEF-190` names (retired and superseded records, a closed vote, the Overdue filter, the graph highlight) are outside both. `DEC-200` i1 adds them to this unit.
+
+**THE NEW TEXT OF `WBS-40.8`, applied after `AC-173` is approved:** the current text, with its last sentence replaced by: *It also fixes `DEF-190` (`DEC-200`): the six states that dimmed text with CSS `opacity` - a retired ADR or invariant body, a superseded decision body, superseded minutes, the Overdue filter's 'On' label, a closed vote's 'closed at' line, the impact graph's dimmed nodes - are muted with design tokens instead; a unit test forbids the device outside the states WCAG exempts; and the sweep opens each state in the four theme and language modes. **DONE-CLAIMED WHEN** `AC-172` and `AC-173` are Met.*
+
+**HOW THE ROWS CLOSE.** `WBS-40.8` is done-claimed on `AC-172` and `AC-173` Met; `DEF-188` and `DEF-190` close Fixed with it.
+
+**APPLICATION ORDER (`LL-042`, `SC-074`'s precedent):** this row Approved -> `AC-173` written `Proposed` -> the OPERATOR approves its text -> `AC-173` Approved and `WBS-40.8`'s text applied in one batch -> both re-read -> this row `Merged`.",1,Merged,,
