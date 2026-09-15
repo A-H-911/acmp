@@ -863,6 +863,7 @@
 {"from_id":"SC-074","to_id":"WBS-40.8","relation":"scope_modifies"}
 {"from_id":"SC-075","to_id":"AC-173","relation":"scope_adds"}
 {"from_id":"SC-075","to_id":"WBS-40.8","relation":"scope_modifies"}
+{"from_id":"SC-076","to_id":"WBS-40.27","relation":"scope_modifies"}
 {"from_id":"SL-037","to_id":"DEC-132","relation":"relates_to"}
 {"from_id":"TEST-001","to_id":"FR-016","relation":"tests"}
 {"from_id":"TEST-001","to_id":"FR-017","relation":"tests"}
