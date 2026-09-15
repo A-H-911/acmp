@@ -118,7 +118,7 @@
 <div class="wrap">
   <header class="masthead">
     <p class="kicker">ACMP · lessons register · operator confirmation</p>
-    <h1>1 lessons are waiting on your word</h1>
+    <h1>2 lessons are waiting on your word</h1>
     <p class="standfirst">Each was recorded by the executing agent after execution taught it something. None of them binds anything yet. Only the ones you approve will.</p>
   </header>
 
@@ -143,8 +143,14 @@
       </thead>
       <tbody>
         <tr>
-          <td class="id">LL-081</td>
-          <td>THE INSTANCE. 2026-09-11/12, polling PR #403's, #404's and main's CI runs. Every background poller was `do { sleep; $s = gh run list ... --jq '[.[] | select(.st…</td>
+          <td class="id">LL-084</td>
+          <td>THE INSTANCE. `WBS-40.8`, 2026-09-15. With axe's `color-contrast` rule switched on, the unmonitored admin tile's chip failed at 2.91:1 in English and PASSED in …</td>
+          <td class="mono">improve</td>
+          <td class="mono">process</td>
+        </tr>
+        <tr>
+          <td class="id">LL-085</td>
+          <td>THE INSTANCE. `AC-173`'s control, 2026-09-15: the six formerly dimmed rules got their `opacity` back and the sweep re-ran. In the light theme every state failed…</td>
           <td class="mono">improve</td>
           <td class="mono">process</td>
         </tr>
@@ -152,44 +158,76 @@
     </table>
   </div>
 
-      <article class="motion" id="LL-081">
+      <article class="motion" id="LL-084">
         <header class="motion-head">
           <div class="eyebrow">
-            <span class="id">LL-081</span>
+            <span class="id">LL-084</span>
             <span class="chip chip-kind">improve</span>
             <span class="chip">process</span>
             <span class="chip chip-pending">Proposed</span>
           </div>
-          <h2>A POLLER WHOSE EXIT TEST CANNOT EVALUATE NEVER EXITS, AND ITS SILENCE READS EXACTLY LIKE 'STILL RUNNING'. IN WINDOWS POWERSHELL 5.1 A DOUBLE QUOTE INSIDE A NATIVE COMMAND'S ARGUMENT IS STRIPPED, SO `gh ... --jq` WITH A QUOTED STRING IN THE FILTER FAILS EVERY TIME. PROVE THE PREDICATE ONCE IN THE FOREGROUND BEFORE BACKGROUNDING THE LOOP, AND BOUND EVERY LOOP.</h2>
+          <h2>A SCANNER CAN DROP A WHOLE SCRIPT WITHOUT SAYING SO. BEFORE TRUSTING A SWEEP IN A SECOND LANGUAGE, COUNT WHAT THE RULE ACTUALLY EVALUATED IN EACH LANGUAGE, AND MAKE THE SWEEP ASSERT THAT ITS ARABIC LEG LOOKED AT ARABIC TEXT.</h2>
         </header>
         
         <div class="field">
           <h3>The lesson</h3>
-          <p>THE INSTANCE. 2026-09-11/12, polling PR #403's, #404's and main's CI runs. Every background poller was `do { sleep; $s = gh run list ... --jq '[.[] | select(.status != "completed")] | length' } while ($s -ne '0')`. Windows PowerShell 5.1 strips the embedded double quotes when it passes the argument to `gh.exe`, so jq received `select(.status != completed)` and failed with `function not defined: completed/0` on every iteration. `$s` held the error text, which is never `'0'`, so all three loops would have run forever. They printed nothing, and 'nothing yet' is exactly what a running poller prints. They were found only when a fourth, BOUNDED loop printed its raw output. No decision rested on them, because every run result had been read directly; that was luck, not design.</p>
+          <p>THE INSTANCE. `WBS-40.8`, 2026-09-15. With axe's `color-contrast` rule switched on, the unmonitored admin tile's chip failed at 2.91:1 in English and PASSED in Arabic, on the same page with the same records. Not a violation, not 'incomplete' - absent. Counting the rule's evaluated nodes gave English 56, Arabic 25. Reading axe-core 4.13's source explained it: the rule only tests an element whose text is not an 'icon ligature', and the ligature test compares the first character drawn alone with the whole string; Arabic letters change shape when joined, so Arabic words look like ligatures, and after three hits the verdict is cached for the whole font family, taking Latin text in the Arabic font with it (`DEF-189`). Every Arabic axe pass this project ran before had `color-contrast` off, so nothing had ever shown it. The fix seeds axe's per-font cache before each run (the app has no icon fonts) and the sweep now fails by name if an Arabic page evaluates no Arabic text - and the control proved it: the Arabic admin sweeps turned red on the same chip the English ones caught.</p>
         </div>
         <div class="field">
           <h3>What to do instead</h3>
-          <p>(1) Before backgrounding any poll loop, run its predicate ONCE in the foreground and read the value it produces. (2) Keep quotes out of native-command filters in PowerShell: select a bare field (`--jq '.[].status'`) and do the comparison in PowerShell. (3) Bound every loop by an iteration count, and print the raw predicate value at exit, so that a loop which cannot evaluate says so instead of waiting. (4) Treat a poller that has gone quiet as suspect, not as a sign the runs are still going.</p>
+          <p>(1) When a check passes in one language and fails in another on the same page, suspect the instrument before the page: count what the rule evaluated in each (passes + violations + incomplete), not only what it reported. (2) Give every per-language sweep a subject clause for that language - e.g. at least one evaluated node carrying Arabic text - so a rule that silently stops looking fails instead of passing. (3) When a scanner's heuristic is disabled or steered through internal API, make the subject clause the tripwire for a future version that stops honouring it.</p>
         </div>
         <div class="field">
           <h3>Why it generalises</h3>
-          <p>An unbounded loop turns an evaluation failure into a hang, and a hang in the background is invisible. The fault sits in the shell's argument passing, not in the filter, so reading the filter cannot reveal it; only running it does. The project already recorded the same silence-as-health failure once, when jq was not installed at all (see the `jq IS NOT INSTALLED` memory note); this is the next form of it.</p>
+          <p>A scanner reports on what it chose to examine. Its skip logic is invisible in its output, so a green result in a second language can mean 'clean' or 'not looked at', and only a count of what was examined tells them apart (`LL-060`: an instrument must report on itself).</p>
         </div>
         <div class="field">
           <h3>If followed</h3>
-          <p>A broken poller fails loudly on its first iteration, or at worst at its bound, and never stands in for a CI result.</p>
+          <p>A bilingual accessibility sweep is known to have examined both languages, and a scanner upgrade that goes blind fails loudly.</p>
         </div>
         <div class="field">
           <h3>If ignored</h3>
-          <p>A session waits on a poller that can never report, or worse, reads its silence as 'CI still running' and makes a decision on that.</p>
+          <p>The Arabic half of an accessibility criterion is recorded Met on a pass that examined less than half the page, and contrast failures in the Arabic UI ship unseen.</p>
+        </div>
+      </article>
+      <article class="motion" id="LL-085">
+        <header class="motion-head">
+          <div class="eyebrow">
+            <span class="id">LL-085</span>
+            <span class="chip chip-kind">improve</span>
+            <span class="chip">process</span>
+            <span class="chip chip-pending">Proposed</span>
+          </div>
+          <h2>WHEN A CONTROL PASSES WHERE THE ARITHMETIC SAYS IT MUST FAIL, THE FINDING IS ABOUT THE INSTRUMENT. A RENDERED CHECK CAN READ A COLOUR MID-TRANSITION, AND AN 'INCOMPLETE' RESULT IS NOT AN EVALUATION: WAIT FOR TRANSITIONS BEFORE MEASURING, AND COUNT ONLY DECIDED RESULTS TOWARDS A SUBJECT CLAUSE.</h2>
+        </header>
+        
+        <div class="field">
+          <h3>The lesson</h3>
+          <p>THE INSTANCE. `AC-173`'s control, 2026-09-15: the six formerly dimmed rules got their `opacity` back and the sweep re-ran. In the light theme every state failed; in the dark theme the impact graph's dimmed nodes - `opacity: 0.3`, computed at about 2:1 - PASSED. The agent did not accept the pass. A standalone probe of the same page a moment later measured 2.34:1 in dark, and two causes surfaced: (1) `.ig-node` transitions `opacity` over 0.15s, and the sweep ran axe the instant the class appeared, so it measured a node still fading; (2) two of the node's texts came back 'incomplete' (axe could not find their background over the graph's SVG edge layer), and the sweep's subject clause - 'the rule evaluated the formerly dimmed element' - counted incomplete as evaluated. With a wait for running CSS transitions and a subject count of passed-or-failed only, the same control failed in dark as well (1.84, 1.89).</p>
+        </div>
+        <div class="field">
+          <h3>What to do instead</h3>
+          <p>(1) Before a control, write down what it must show - here a computed ratio - so a pass that contradicts the arithmetic is noticed rather than welcomed. (2) Before any rendered colour check, wait until no CSS transition is running (document.getAnimations() filtered to CSSTransition); infinite keyframe animations are a separate case. (3) In a scanner's results, treat 'incomplete' / 'needs review' as 'not determined': never let it satisfy a clause that says the element was checked.</p>
+        </div>
+        <div class="field">
+          <h3>Why it generalises</h3>
+          <p>A rendered check measures the frame it is given and a scanner reports what it could decide; neither says so when it measured a transient frame or decided nothing. Only a control with a predicted outcome exposes that (`LL-060`, `LL-084`).</p>
+        </div>
+        <div class="field">
+          <h3>If followed</h3>
+          <p>Contrast checks measure the resting state, and a subject clause cannot be satisfied by a result that decided nothing.</p>
+        </div>
+        <div class="field">
+          <h3>If ignored</h3>
+          <p>A sweep passes on a state it caught mid-animation, or on elements it could not evaluate, and a real failure ships with a green check against it.</p>
         </div>
       </article>
 
   <footer>
     Generated from the tamheed export tamheed-package/exports/lessons.json, written by the MCP tool
     <code>entity_export</code>, by scripts/gen-lesson-docket.mjs.<br>
-    Package digest at export: <code>8eaf448b365336111b5d065b96de181f74b608413146764a5ce5ed79cb89eb88</code> &mdash; run <code>package_verify()</code>; the same
+    Package digest at export: <code>d7a30eeb62a84d37866867058e753794e88c8645b501202035b8e019651376b1</code> &mdash; run <code>package_verify()</code>; the same
     digest means nothing has changed since this page was generated.<br>
-    1 of 81 rows in the register are Proposed; the rest are Approved or Superseded and are not on this docket.
+    2 of 85 rows in the register are Proposed; the rest are Approved or Superseded and are not on this docket.
   </footer>
 </div>
