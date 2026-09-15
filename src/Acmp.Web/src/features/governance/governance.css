@@ -237,8 +237,10 @@
 /* Aside tracks the design's sticky metadata/traceability column (scoped so other detail pages are untouched). */
 .adr-detail-grid .detail-aside-stack { position: sticky; inset-block-start: 74px; }
 .adr-body { padding: 24px 28px; max-inline-size: 720px; }
-/* Superseded/Deprecated records read as retired — dimmed body, matching the design's reduced-opacity treatment. */
-.adr-body.adr-body-muted { opacity: 0.62; }
+/* Superseded/Deprecated records read as retired. The design dims the body with opacity; that took its muted lines
+   under AA (DEF-190, ADR-0045: AA governs), so the body is muted with tokens instead - the subtle fill, no shadow -
+   and every line inside keeps a pair contrast.test.ts holds at AA. */
+.adr-body.adr-body-muted { background: var(--subtle); box-shadow: none; }
 .adr-section { margin-block-end: 24px; }
 .adr-section:last-child { margin-block-end: 0; }
 .adr-section-head {

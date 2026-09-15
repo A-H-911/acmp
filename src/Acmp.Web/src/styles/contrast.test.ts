@@ -107,6 +107,9 @@ const PAIRS: ReadonlyArray<readonly [string, string, number, string]> = [
   ['text', 'subtle', TEXT, 'secondary button, hover'],
   ['accent', 'primary-tint', TEXT, 'ghost button, hover'],
   ['primary-fg', 'st-danger-dot', TEXT, 'danger button label (DEF-187: #fff on the danger fill)'],
+  // DEF-190: retired records and dimmed graph nodes are muted with the subtle fill instead of opacity, so what they
+  // hold is paired on it (text, text-2 and text-3 on subtle are above).
+  ['accent', 'subtle', TEXT, 'links and keys in a retired ADR, invariant or decision body'],
 ];
 
 const UI = 3; // UI components and their boundaries (WCAG 1.4.11)

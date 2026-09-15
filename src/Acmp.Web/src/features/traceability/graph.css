@@ -94,7 +94,10 @@
 .ig-tier-label { position: absolute; inset-block-start: 8px; inset-inline-start: var(--x); inline-size: 152px; text-align: center; font-size: 10px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; color: var(--text-3); }
 .ig-node { position: absolute; inset-inline-start: var(--x); inset-block-start: var(--y); inline-size: 152px; block-size: 94px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-start; gap: 5px; padding: 9px 11px; border-radius: 10px; text-align: start; overflow: hidden; background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow); transition: opacity 0.15s, border-color 0.15s; }
 .ig-node:hover { border-color: var(--accent); }
-.ig-node--dim { opacity: 0.3; } /* outside the active highlight */
+/* Outside the active highlight. The node recedes with tokens - a flat subtle card, a dashed line, a quieter title -
+   rather than opacity 0.3, which took its text to 1.6-2.4:1 (DEF-190, ADR-0045: AA governs). */
+.ig-node--dim { background: var(--subtle); border-style: dashed; box-shadow: none; }
+.ig-node--dim .ig-node-title { color: var(--text-2); }
 .ig-node--focus { border-width: 2px; border-color: var(--accent); background: var(--primary-tint); box-shadow: var(--shadow-lg); }
 /* A node matched by an active toggle gets the affirmative coloured border (reference `bd`). */
 .ig-node--hitBlocked { border-color: var(--st-danger-dot); }

@@ -2,10 +2,10 @@ import { test, expect, type Page } from '@playwright/test';
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import { loginAs } from './login';
-import { captureBearer, meMember } from './apiHelpers';
+import { captureBearer, meMember, roleSession } from './apiHelpers';
 import {
-  apiAddAgendaItem, apiConfigureVote, apiCreateAction, apiCreateTopic, apiMembers, apiPreparedTopic, apiRecordDecision,
-  apiScheduleMeeting,
+  apiAddAgendaItem, apiCastBallot, apiCloseVote, apiConfigureVote, apiCreateAction, apiCreateTopic, apiIssueDecision, apiMembers,
+  apiOpenVote, apiPreparedTopic, apiRecordDecision, apiScheduleMeeting,
 } from './scenario';
 import { A11Y_ROUTES, type A11yPrincipal } from '../src/test/a11yRoutes';
 
@@ -42,8 +42,10 @@ interface AxeRun {
   violations: Violation[];
   /** Elements the color-contrast rule actually evaluated (passed, failed or needs review). */
   contrastChecked: number;
-  /** ...of which carry Arabic text. The subject clause of the Arabic sweep (DEF-189). */
+  /** Elements carrying Arabic text that the rule DECIDED (passed or failed). The Arabic sweep's subject (DEF-189). */
   arabicContrastChecked: number;
+  /** Elements inside the `subject` selector passed to runAxe that the rule decided (AC-173: the formerly dimmed one). */
+  subjectContrastChecked: number;
 }
 
 /*
@@ -60,9 +62,15 @@ interface AxeRun {
  * which is the state in which isIconLigature answers false at once. axe._cache is internal API; if a later axe
  * stops reading it, the Arabic subject check below fails by name rather than letting the sweep go blind again.
  */
-async function runAxe(page: Page): Promise<AxeRun> {
+async function runAxe(page: Page, subject?: string): Promise<AxeRun> {
+  // ⚠ A CSS TRANSITION STILL RUNNING IS A COLOUR IN BETWEEN. AC-173's control put `opacity: 0.3` back on the graph's
+  // dimmed nodes, whose card transitions opacity over 0.15s: a dark run caught them mid-fade and passed, while a
+  // run a moment later measured 2.34:1. So axe waits for transitions (not infinite keyframe animations) to finish.
+  await page.waitForFunction(() =>
+    document.getAnimations().every((a) => !(a instanceof CSSTransition) || a.playState !== 'running'),
+  );
   await page.evaluate(AXE_SOURCE); // defines window.axe; CDP eval bypasses the page CSP
-  return page.evaluate(async (tags) => {
+  return page.evaluate(async ([tags, subjectSelector]) => {
     type AxeNode = { target: unknown[]; failureSummary?: string };
     type Result = { id: string; impact: string | null; nodes: AxeNode[] };
     // axe is a page global defined by the evaluate above.
@@ -79,10 +87,13 @@ async function runAxe(page: Page): Promise<AxeRun> {
     const result = await axe.run(document, { runOnly: { type: 'tag', values: tags } });
 
     const isArabic = (s: string) => Array.from(s).some((ch) => ch.charCodeAt(0) >= 0x0600 && ch.charCodeAt(0) <= 0x06ff);
-    const contrastNodes = [...result.passes, ...result.violations, ...result.incomplete]
-      .filter((r) => r.id === 'color-contrast')
-      .flatMap((r) => r.nodes);
-    const textOf = (n: AxeNode) => (typeof n.target[0] === 'string' ? document.querySelector(n.target[0])?.textContent ?? '' : '');
+    const contrastOf = (rs: Result[]) => rs.filter((r) => r.id === 'color-contrast').flatMap((r) => r.nodes);
+    const contrastNodes = [...contrastOf(result.passes), ...contrastOf(result.violations), ...contrastOf(result.incomplete)];
+    // DECIDED = passed or failed. An "incomplete" is axe saying it could not tell (e.g. text over the graph's SVG edge
+    // layer), so it proves nothing about the element and does not count towards a subject clause.
+    const decided = [...contrastOf(result.passes), ...contrastOf(result.violations)];
+    const elementOf = (n: AxeNode) => (typeof n.target[0] === 'string' ? document.querySelector(n.target[0]) : null);
+    const textOf = (n: AxeNode) => elementOf(n)?.textContent ?? '';
     return {
       violations: result.violations.map((v) => ({
         id: v.id,
@@ -91,9 +102,10 @@ async function runAxe(page: Page): Promise<AxeRun> {
         sample: v.nodes.slice(0, 3).map((n) => `${n.target.join(' ')} :: ${(n.failureSummary ?? '').replace(/\s+/g, ' ').slice(0, 220)}`),
       })),
       contrastChecked: contrastNodes.length,
-      arabicContrastChecked: contrastNodes.filter((n) => isArabic(textOf(n))).length,
+      arabicContrastChecked: decided.filter((n) => isArabic(textOf(n))).length,
+      subjectContrastChecked: subjectSelector ? decided.filter((n) => elementOf(n)?.closest(subjectSelector)).length : 0,
     };
-  }, WCAG);
+  }, [WCAG, subject ?? ''] as const);
 }
 
 async function axeViolations(page: Page): Promise<Violation[]> {
@@ -535,4 +547,116 @@ test.describe('S6b-3 — RTL/Arabic + accessibility', () => {
     test.info().annotations.push({ type: 'a11y-routes-swept', description: `signed out - ${stops.length} x ${MODES.length} modes` });
     expect(offenders, `axe violations signed out, ${stops.length} route(s) x ${MODES.length} modes`).toEqual({});
   });
+
+  // ---- AC-173 (WBS-40.8, DEC-200): the states that used to dim their content with opacity ----
+  // The manifest sweep opens each route in its default state; these five states only exist once a record has been
+  // retired, superseded or closed, or a view toggle is on, so they are put in place first. The sixth, superseded
+  // minutes, never reaches the screen (the page shows the newest version) and is guarded by opacity.test.ts alone.
+  for (const mode of MODES) {
+    test(`the formerly dimmed states are axe-clean in ${modeName(mode)} (AC-173)`, async ({ page }) => {
+      test.setTimeout(240_000);
+      await useMode(page, mode);
+      // Chairman: the one role that may supersede a decision (DecisionChairApprove), and it holds every other step.
+      const { bearer, member: me } = await roleSession(page, 'chairman', 'Chairman');
+      const offenders: Record<string, Violation[]> = {};
+      const states = await seedDimmedStates(page, bearer, me);
+      for (const state of states) {
+        await page.goto(state.url);
+        await expect(page.locator('#main'), `${state.name} rendered the shell`).toBeVisible();
+        if (state.act) await state.act(page);
+        // The state's own marker: without it the check would sweep the record in its ordinary state and prove nothing.
+        await expect(page.locator(state.marker).first(), `${state.name}: ${state.marker} is on the page`).toBeVisible();
+        await expectMode(page, mode);
+        const run = await runAxe(page, state.marker);
+        expectContrastSubject(run, mode, state.name);
+        expect(run.subjectContrastChecked, `${state.name}: the color-contrast rule evaluated nothing inside ${state.marker}`).toBeGreaterThan(0);
+        if (run.violations.length > 0) offenders[state.name] = run.violations;
+      }
+      test.info().annotations.push({ type: 'a11y-routes-swept', description: `${modeName(mode)} - AC-173 states: ${states.map((s) => s.name).join(', ')}` });
+      expect(offenders, `axe violations on the formerly dimmed states (${modeName(mode)})`).toEqual({});
+    });
+  }
 });
+
+interface DimmedState {
+  name: string;
+  url: string;
+  /** The class that marks the state - the element that used to be dimmed. */
+  marker: string;
+  /** A view toggle to switch on after the page loads, for the states that are a view rather than a record. */
+  act?: (page: Page) => Promise<void>;
+}
+
+/** Put one record into each state AC-173 sweeps: retired ADR and invariant, superseded decision, closed vote; and
+ *  the two view states, the Overdue filter and the graph's cross-stream highlight. */
+async function seedDimmedStates(page: Page, bearer: string, me: { keycloakUserId: string; fullName: string }): Promise<DimmedState[]> {
+  const H = { Authorization: bearer, 'Content-Type': 'application/json' };
+  const call = async (url: string, data?: unknown): Promise<{ id: string; key: string }> => {
+    const res = await page.request.post(url, { headers: H, data: data ?? {} });
+    const body = await res.text();
+    if (!res.ok()) throw new Error(`[a11y seed] POST ${url} ${res.status()} ${body}`);
+    return body ? JSON.parse(body) : { id: '', key: '' }; // the transitions answer 204 No Content
+  };
+  const L = (s: string) => ({ en: s, ar: s });
+  const stamp = Date.now().toString(36);
+
+  const adr = await call('/api/adrs', {
+    title: L(`A11y retired ADR ${stamp}`), context: L('Retired context'), decisionDrivers: null, decisionText: L('Retired decision'),
+    consequencesPositive: null, consequencesNegative: null, options: null,
+  });
+  await call(`/api/adrs/${adr.id}/propose`);
+  await call(`/api/adrs/${adr.id}/approve`);
+  await call(`/api/adrs/${adr.id}/deprecate`, { reason: L('Retired for the contrast sweep') });
+
+  const invariant = await call('/api/invariants', {
+    category: 'Security', scope: 'Platform', statement: L(`A11y retired invariant ${stamp}`), rationale: L('Retired rationale'),
+    exceptionsPolicy: null, ownerUserId: me.keycloakUserId, ownerName: me.fullName,
+  });
+  await call(`/api/invariants/${invariant.id}/propose`);
+  await call(`/api/invariants/${invariant.id}/approve`);
+  await call(`/api/invariants/${invariant.id}/retire`, { reason: L('Retired for the contrast sweep') });
+
+  const topic = await apiCreateTopic(page.request, bearer, `A11y dimmed-states topic ${stamp}`);
+  const decision = await apiRecordDecision(page.request, bearer, {
+    topicId: topic.id, title: `A11y superseded decision ${stamp}`, statement: 'Prior statement.', rationale: 'Prior rationale.',
+  });
+  await apiIssueDecision(page.request, bearer, decision.id);
+  await call(`/api/decisions/${decision.id}/supersede`, {
+    outcome: 'Deferred', title: L(`A11y successor decision ${stamp}`), statement: L('Successor statement.'),
+    rationale: L('Successor rationale.'), alternatives: null, conditions: null, reason: L('Superseded for the contrast sweep'),
+  });
+
+  const vote = await apiConfigureVote(page.request, bearer, {
+    topicId: topic.id, eligibleVoters: [{ userId: me.keycloakUserId, name: me.fullName }], minCast: 1,
+  });
+  await apiOpenVote(page.request, bearer, vote.id);
+  await apiCastBallot(page.request, bearer, vote.id, 'Approve');
+  await apiCloseVote(page.request, bearer, vote.id);
+
+  // Something for the graph to de-highlight: an action blocking the topic (the graph draws dependency links).
+  const action = await apiCreateAction(page.request, bearer, {
+    title: `A11y dimmed-states action ${stamp}`, ownerUserId: me.keycloakUserId, ownerName: me.fullName, sourceId: topic.id, dueDate: '2026-12-01',
+  });
+  await call('/api/dependencies', {
+    fromType: 'Topic', fromId: topic.id, fromKey: topic.key, fromTitle: topic.title,
+    toType: 'Action', toId: action.id, toKey: action.key, toTitle: `A11y dimmed-states action ${stamp}`, kind: 'BlockedBy', note: null,
+  });
+
+  return [
+    { name: 'deprecated ADR', url: `/adrs/${adr.key}`, marker: '.adr-body-muted' },
+    { name: 'retired invariant', url: `/invariants/${invariant.key}`, marker: '.adr-body-muted' },
+    { name: 'superseded decision', url: `/decisions/${decision.key}`, marker: '.dec-body-muted' },
+    { name: 'closed vote', url: `/votes/${vote.key}`, marker: '.vote-closed-sub' },
+    {
+      name: 'Overdue filter on', url: '/actions', marker: '.act-toggle-on',
+      act: async (p) => { await p.locator('button.fchip[aria-pressed="false"]').click(); },
+    },
+    {
+      // The CROSS-STREAM highlight, not the blocked one: the graph draws dependency links only, so it holds the topic
+      // and the action blocking it - both "blocked", so the blocked highlight would leave nothing to dim. Neither is
+      // cross-stream, so this highlight dims the action (the focused topic never dims).
+      name: 'graph highlight on', url: `/traceability/Topic/${topic.key}`, marker: '.ig-node--dim',
+      act: async (p) => { await p.locator('.ig-toggle--cross').click(); },
+    },
+  ];
+}
