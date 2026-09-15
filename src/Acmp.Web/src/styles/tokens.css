@@ -44,10 +44,13 @@
   /* --font-app is the active family; flipped to Arabic under [dir="rtl"]. */
   --font-app: var(--font-sans);
 
-  /* Themeable — light (default) */
+  /* Themeable — light (default)
+     DEC-199 / AC-172: every border token meets 3:1 on every surface it can sit on (WCAG 1.4.11), keeping
+     soft < normal < strong; --text-3 meets 4.5:1 on every surface it is painted on (DEF-186); the danger
+     fill carries its white label at 4.6:1 (DEF-187). styles/contrast.test.ts guards all three. */
   --bg-app: #e9edf1; --surface: #ffffff; --subtle: #f4f6f8; --sunken: #e6eaee; --header: #f8f9fb;
-  --border: #dde2e8; --border-soft: #e9edf1; --border-strong: #c5ccd5;
-  --text: #1a232f; --text-2: #56616f; --text-3: #6b7480;
+  --border: #7d7f83; --border-soft: #848688; --border-strong: #71757a;
+  --text: #1a232f; --text-2: #56616f; --text-3: #626a75;
   --primary: #1a4f8a; --primary-hover: #163f6e; --primary-fg: #ffffff;
   --accent: #1a5fae; --primary-tint: #e9f1f9;
   --focus: #1a5fae; --scroll: #c5ccd5; --ring: rgba(26, 79, 138, .12);
@@ -61,13 +64,13 @@
   --st-sched-bg: #ecebfb; --st-sched-fg: #473ba0; --st-sched-dot: #6b5ce0;
   --st-warn-bg: #fbf0d6; --st-warn-fg: #83540a; --st-warn-dot: #cf8a1c;
   --st-success-bg: #dcefe1; --st-success-fg: #1d6a39; --st-success-dot: #2f9e54;
-  --st-danger-bg: #fbe2e2; --st-danger-fg: #9f2530; --st-danger-dot: #d6453f;
+  --st-danger-bg: #fbe2e2; --st-danger-fg: #9f2530; --st-danger-dot: #d0433d;
   --st-accent-dot: var(--accent); --st-accent-fg: var(--accent);
 }
 
 [data-theme="dark"] {
   --bg-app: #0d1116; --surface: #161c23; --subtle: #1b222a; --sunken: #0a0e12; --header: #141a20;
-  --border: #2a333d; --border-soft: #222a33; --border-strong: #3a4651;
+  --border: #6c7279; --border-soft: #666c72; --border-strong: #747d85;
   --text: #e7ebf0; --text-2: #9eaab7; --text-3: #828d9c;
   --primary: #1f5fa8; --primary-hover: #2a6fbb; --primary-fg: #ffffff;
   --accent: #6db0ee; --primary-tint: #15273a;
@@ -80,7 +83,7 @@
   --st-sched-bg: #201d3d; --st-sched-fg: #a99ff4; --st-sched-dot: #7a6cef;
   --st-warn-bg: #33260f; --st-warn-fg: #e2af57; --st-warn-dot: #cf8a1c;
   --st-success-bg: #10301d; --st-success-fg: #6ec78a; --st-success-dot: #2f9e54;
-  --st-danger-bg: #371618; --st-danger-fg: #f09a9a; --st-danger-dot: #d6453f;
+  --st-danger-bg: #371618; --st-danger-fg: #f09a9a; --st-danger-dot: #d0433d;
   --st-accent-dot: var(--accent); --st-accent-fg: var(--accent);
   color-scheme: dark;
 }
@@ -106,7 +109,7 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]):not([data-theme="dark"]) {
     --bg-app: #0d1116; --surface: #161c23; --subtle: #1b222a; --sunken: #0a0e12; --header: #141a20;
-    --border: #2a333d; --border-soft: #222a33; --border-strong: #3a4651;
+    --border: #6c7279; --border-soft: #666c72; --border-strong: #747d85;
     --text: #e7ebf0; --text-2: #9eaab7; --text-3: #828d9c;
     --primary: #1f5fa8; --primary-hover: #2a6fbb; --primary-fg: #ffffff;
     --accent: #6db0ee; --primary-tint: #15273a;
@@ -119,7 +122,7 @@
     --st-sched-bg: #201d3d; --st-sched-fg: #a99ff4; --st-sched-dot: #7a6cef;
     --st-warn-bg: #33260f; --st-warn-fg: #e2af57; --st-warn-dot: #cf8a1c;
     --st-success-bg: #10301d; --st-success-fg: #6ec78a; --st-success-dot: #2f9e54;
-    --st-danger-bg: #371618; --st-danger-fg: #f09a9a; --st-danger-dot: #d6453f;
+    --st-danger-bg: #371618; --st-danger-fg: #f09a9a; --st-danger-dot: #d0433d;
     --st-accent-dot: var(--accent); --st-accent-fg: var(--accent);
     color-scheme: dark;
   }

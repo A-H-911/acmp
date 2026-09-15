@@ -16,8 +16,13 @@ import { A11Y_ROUTES, type A11yPrincipal } from '../src/test/a11yRoutes';
  *
  * The app ships a strict CSP (`script-src 'self'`), so `addScriptTag` (inline injection) is blocked
  * — we run the axe source through `page.evaluate` instead, which executes via CDP and bypasses page
- * CSP. `color-contrast` is disabled to match the S4 unit convention: contrast is a
- * design-token/fidelity concern, out of scope for this slice.
+ * CSP.
+ *
+ * ⚠ `color-contrast` IS ON (AC-172, WBS-40.8). It was switched off here from S6b-3 until 2026-09-15 on the
+ * grounds that contrast was a design-token concern, so the only contrast check was the token-pair table in
+ * src/styles/contrast.test.ts - which paired `--text-3` with `--surface` alone while the app painted it on five
+ * surfaces (DEF-186, 147 rendered failures). The rendered check sees what the table cannot: the surface a
+ * token actually lands on. It is the same axe rule Lighthouse's contrast audit runs.
  */
 const require = createRequire(import.meta.url);
 const AXE_SOURCE = readFileSync(require.resolve('axe-core/axe.min.js'), 'utf8');
@@ -28,18 +33,102 @@ interface Violation {
   id: string;
   impact: string | null;
   nodes: number;
+  /** The first few offending nodes, with axe's own summary (for color-contrast: the two colours and the ratio),
+   *  so a failure names WHAT failed, not only how many - AC-172's controls must name the pairs. */
+  sample: string[];
+}
+
+interface AxeRun {
+  violations: Violation[];
+  /** Elements the color-contrast rule actually evaluated (passed, failed or needs review). */
+  contrastChecked: number;
+  /** ...of which carry Arabic text. The subject clause of the Arabic sweep (DEF-189). */
+  arabicContrastChecked: number;
+}
+
+/*
+ * ⛔ DEF-189: axe-core SKIPS ARABIC TEXT IN color-contrast UNLESS TOLD NOT TO. The rule tests an element only if
+ * one of its text nodes is not an "icon ligature", and axe decides that on a canvas - the first character drawn
+ * alone against the whole string, 15% apart in pixels and in width. Arabic letters change shape when joined,
+ * so ordinary Arabic words pass that test, and after three hits axe caches the verdict for the whole FONT FAMILY:
+ * every later node in the Arabic font stack, Latin included, is dropped. A dropped element is not a violation
+ * and not "incomplete" - it is simply absent, so the Arabic sweep passed while checking 25 of 56 elements on
+ * /admin/users and missing a 2.9:1 chip the English sweep caught.
+ *
+ * The app has no icon fonts (its icons are inline SVG), so the heuristic protects nothing here. Before each run
+ * every font family on the page is entered in axe's own per-font cache as "seen three times, never a ligature",
+ * which is the state in which isIconLigature answers false at once. axe._cache is internal API; if a later axe
+ * stops reading it, the Arabic subject check below fails by name rather than letting the sweep go blind again.
+ */
+async function runAxe(page: Page): Promise<AxeRun> {
+  await page.evaluate(AXE_SOURCE); // defines window.axe; CDP eval bypasses the page CSP
+  return page.evaluate(async (tags) => {
+    type AxeNode = { target: unknown[]; failureSummary?: string };
+    type Result = { id: string; impact: string | null; nodes: AxeNode[] };
+    // axe is a page global defined by the evaluate above.
+    const axe = (window as unknown as {
+      axe: {
+        _cache: { set: (key: string, value: unknown) => void };
+        run: (ctx: Document, opts: unknown) => Promise<{ violations: Result[]; passes: Result[]; incomplete: Result[] }>;
+      };
+    }).axe;
+
+    const families = new Set(Array.from(document.querySelectorAll('*'), (el) => getComputedStyle(el).fontFamily));
+    axe._cache.set('fonts', Object.fromEntries([...families].map((f) => [f, { occurrences: 3, numLigatures: 0 }])));
+
+    const result = await axe.run(document, { runOnly: { type: 'tag', values: tags } });
+
+    const isArabic = (s: string) => Array.from(s).some((ch) => ch.charCodeAt(0) >= 0x0600 && ch.charCodeAt(0) <= 0x06ff);
+    const contrastNodes = [...result.passes, ...result.violations, ...result.incomplete]
+      .filter((r) => r.id === 'color-contrast')
+      .flatMap((r) => r.nodes);
+    const textOf = (n: AxeNode) => (typeof n.target[0] === 'string' ? document.querySelector(n.target[0])?.textContent ?? '' : '');
+    return {
+      violations: result.violations.map((v) => ({
+        id: v.id,
+        impact: v.impact,
+        nodes: v.nodes.length,
+        sample: v.nodes.slice(0, 3).map((n) => `${n.target.join(' ')} :: ${(n.failureSummary ?? '').replace(/\s+/g, ' ').slice(0, 220)}`),
+      })),
+      contrastChecked: contrastNodes.length,
+      arabicContrastChecked: contrastNodes.filter((n) => isArabic(textOf(n))).length,
+    };
+  }, WCAG);
 }
 
 async function axeViolations(page: Page): Promise<Violation[]> {
-  await page.evaluate(AXE_SOURCE); // defines window.axe; CDP eval bypasses the page CSP
-  return page.evaluate(async (tags) => {
-    // axe is injected as a page global by addScriptTag.
-    const result = await (window as unknown as { axe: { run: (ctx: Document, opts: unknown) => Promise<{ violations: Array<{ id: string; impact: string | null; nodes: unknown[] }> }> } }).axe.run(
-      document,
-      { runOnly: { type: 'tag', values: tags }, rules: { 'color-contrast': { enabled: false } } },
-    );
-    return result.violations.map((v) => ({ id: v.id, impact: v.impact, nodes: v.nodes.length }));
-  }, WCAG);
+  return (await runAxe(page)).violations;
+}
+
+/*
+ * AC-172: every manifest route is swept in all four combinations of theme and language. Both are read from
+ * localStorage at start-up (theme.ts; i18next's detector), so an init script sets them before every
+ * navigation - including the sign-in round trip, where it is harmless on Keycloak's origin.
+ */
+interface Mode {
+  lang: 'en' | 'ar';
+  theme: 'light' | 'dark';
+}
+const MODES: readonly Mode[] = [
+  { lang: 'en', theme: 'light' },
+  { lang: 'ar', theme: 'light' },
+  { lang: 'en', theme: 'dark' },
+  { lang: 'ar', theme: 'dark' },
+];
+const modeName = (m: Mode) => `${m.lang === 'ar' ? 'Arabic/RTL' : 'English'}, ${m.theme} theme`;
+
+async function useMode(page: Page, mode: Mode): Promise<void> {
+  await page.addInitScript(([l, t]) => {
+    localStorage.setItem('i18nextLng', l);
+    localStorage.setItem('acmp-theme', t);
+  }, [mode.lang, mode.theme] as const);
+}
+
+/** Proof the page is in the mode the sweep claims. Without it a dark sweep that rendered light would report the
+ *  light result twice and call it both (LL-060: an instrument must report on itself). */
+async function expectMode(page: Page, mode: Mode): Promise<void> {
+  await expect(page.locator('html')).toHaveAttribute('dir', mode.lang === 'ar' ? 'rtl' : 'ltr');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', mode.theme);
 }
 
 async function switchToArabic(page: Page): Promise<void> {
@@ -167,19 +256,36 @@ function stopsFor(as: A11yPrincipal, seeded: Record<string, Stop> = {}): Stop[] 
  * rendered nothing, would be swept and reported clean. `#main` is AppShell's own landmark, so it is present
  * only when the authenticated shell actually rendered the route - and a seeded stop must also show its record.
  */
-async function violationsByRoute(page: Page, stops: readonly Stop[]): Promise<Record<string, Violation[]>> {
+async function violationsByRoute(page: Page, stops: readonly Stop[], mode: Mode): Promise<Record<string, Violation[]>> {
   const offenders: Record<string, Violation[]> = {};
+  let checked = 0;
   for (const stop of stops) {
     await page.goto(stop.url);
     await expect(page.locator('#main'), `${stop.url} rendered the shell`).toBeVisible();
     if (stop.subject) await expect(page.locator('#main'), `${stop.url} shows its record`).toContainText(stop.subject);
-    const violations = await axeViolations(page);
-    if (violations.length > 0) offenders[stop.url] = violations;
+    await expectMode(page, mode);
+    const run = await runAxe(page);
+    expectContrastSubject(run, mode, stop.url);
+    checked += run.contrastChecked;
+    if (run.violations.length > 0) offenders[stop.url] = run.violations;
   }
-  // The sweep reports on itself (LL-060): the report shows how many routes each run actually visited, so a
-  // green result that swept nothing cannot read like one that swept everything.
-  test.info().annotations.push({ type: 'a11y-routes-swept', description: `${stops.length}: ${stops.map((s) => s.url).join(' ')}` });
+  // The sweep reports on itself (LL-060): the report shows how many routes each run actually visited, in which
+  // mode, and how many elements the contrast rule evaluated, so a green result that swept nothing cannot read
+  // like one that swept everything.
+  test.info().annotations.push({
+    type: 'a11y-routes-swept',
+    description: `${modeName(mode)} - ${stops.length} routes, ${checked} contrast checks: ${stops.map((s) => s.url).join(' ')}`,
+  });
   return offenders;
+}
+
+/** The contrast rule must have looked at something - and, in Arabic, at Arabic text (DEF-189). Every page carries
+ *  the shell's navigation, so a zero here means the rule went blind, not that the page was empty. */
+function expectContrastSubject(run: AxeRun, mode: Mode, where: string): void {
+  expect(run.contrastChecked, `${where} (${modeName(mode)}): the color-contrast rule evaluated no element`).toBeGreaterThan(0);
+  if (mode.lang === 'ar') {
+    expect(run.arabicContrastChecked, `${where} (${modeName(mode)}): the color-contrast rule evaluated no Arabic text (DEF-189)`).toBeGreaterThan(0);
+  }
 }
 
 test.describe('S6b-3 — RTL/Arabic + accessibility', () => {
@@ -381,59 +487,52 @@ test.describe('S6b-3 — RTL/Arabic + accessibility', () => {
     expect(await axeViolations(page), 'Meetings calendar (AR/RTL) axe violations').toEqual([]);
   });
 
-  // ---- route coverage: AC-170 (WBS-40.6, DEC-196) ----
+  // ---- route coverage: AC-170 (WBS-40.6, DEC-196), in every theme and language: AC-172 (WBS-40.8, DEC-199) ----
   // Driven by src/test/a11yRoutes.ts. These carry their own timeout: forty-odd full page loads plus an axe
   // pass each is well past Playwright's default, and a sweep that dies on the default timeout reports nothing.
 
-  test('every Secretary route, static and parameterised, is axe-clean in English', async ({ page }) => {
-    test.setTimeout(420_000);
-    await loginAs(page, 'secretary');
-    const stops = stopsFor('secretary', await seedRecords(page));
-    const offenders = await violationsByRoute(page, stops);
-    expect(offenders, `axe violations by route (EN), ${stops.length} routes swept`).toEqual({});
-  });
+  for (const mode of MODES) {
+    test(`every Secretary route, static and parameterised, is axe-clean in ${modeName(mode)}`, async ({ page }) => {
+      test.setTimeout(420_000);
+      await useMode(page, mode);
+      await loginAs(page, 'secretary');
+      const stops = stopsFor('secretary', await seedRecords(page));
+      const offenders = await violationsByRoute(page, stops, mode);
+      expect(offenders, `axe violations by route (${modeName(mode)}), ${stops.length} routes swept`).toEqual({});
+    });
 
-  test('every Secretary route, static and parameterised, is axe-clean in Arabic/RTL', async ({ page }) => {
-    test.setTimeout(420_000);
-    await loginAs(page, 'secretary');
-    const seeded = await seedRecords(page);
-    // Switch once on a route known to carry the toggle, then sweep - the locale is persisted, so flipping per
-    // route would add forty redundant round trips.
-    await page.goto('/backlog');
-    await switchToArabic(page);
-    const stops = stopsFor('secretary', seeded);
-    const offenders = await violationsByRoute(page, stops);
-    expect(offenders, `axe violations by route (AR/RTL), ${stops.length} routes swept`).toEqual({});
-  });
-
-  // The admin area needs its own login: RequireRole gates /admin on `administrator` alone, so the Secretary the
-  // rest of this spec uses would be bounced and the sweep would prove nothing.
-  test('every Administrator route is axe-clean in both English and Arabic', async ({ page }) => {
-    test.setTimeout(120_000);
-    await loginAs(page, 'administrator');
-    const stops = stopsFor('administrator');
-    expect(await violationsByRoute(page, stops), 'Administration (EN) axe violations').toEqual({});
-
-    await switchToArabic(page);
-    expect(await violationsByRoute(page, stops), 'Administration (AR/RTL) axe violations').toEqual({});
-  });
+    // The admin area needs its own login: RequireRole gates /admin on `administrator` alone, so the Secretary the
+    // rest of this spec uses would be bounced and the sweep would prove nothing.
+    test(`every Administrator route is axe-clean in ${modeName(mode)}`, async ({ page }) => {
+      test.setTimeout(120_000);
+      await useMode(page, mode);
+      await loginAs(page, 'administrator');
+      const stops = stopsFor('administrator');
+      expect(await violationsByRoute(page, stops, mode), `Administration (${modeName(mode)}) axe violations`).toEqual({});
+    });
+  }
 
   // The sign-in page is the one screen a person sees signed OUT, so it is opened with no session at all. It has
   // no AppShell (#main), so its own call to action is the proof that it rendered.
-  test('the signed-out sign-in page is axe-clean in both English and Arabic', async ({ page }) => {
+  test('the signed-out sign-in page is axe-clean in every theme and language', async ({ page }) => {
     const stops = stopsFor('signedOut');
     const offenders: Record<string, Violation[]> = {};
     for (const stop of stops) {
-      for (const lang of ['en', 'ar'] as const) {
+      for (const mode of MODES) {
         await page.goto(stop.url);
-        await page.evaluate((l) => localStorage.setItem('i18nextLng', l), lang);
+        await page.evaluate(([l, t]) => {
+          localStorage.setItem('i18nextLng', l);
+          localStorage.setItem('acmp-theme', t);
+        }, [mode.lang, mode.theme] as const);
         await page.reload();
-        await expect(page.locator('html')).toHaveAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+        await expectMode(page, mode);
         await expect(page.locator('.login-cta')).toBeVisible();
-        const violations = await axeViolations(page);
-        if (violations.length > 0) offenders[`${stop.url} (${lang})`] = violations;
+        const run = await runAxe(page);
+        expectContrastSubject(run, mode, stop.url);
+        if (run.violations.length > 0) offenders[`${stop.url} (${modeName(mode)})`] = run.violations;
       }
     }
-    expect(offenders, `axe violations signed out, ${stops.length} route(s) x 2 languages`).toEqual({});
+    test.info().annotations.push({ type: 'a11y-routes-swept', description: `signed out - ${stops.length} x ${MODES.length} modes` });
+    expect(offenders, `axe violations signed out, ${stops.length} route(s) x ${MODES.length} modes`).toEqual({});
   });
 });
