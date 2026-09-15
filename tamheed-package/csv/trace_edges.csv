@@ -864,6 +864,7 @@ SC-074,AC-172,scope_adds
 SC-074,WBS-40.8,scope_modifies
 SC-075,AC-173,scope_adds
 SC-075,WBS-40.8,scope_modifies
+SC-076,WBS-40.27,scope_modifies
 SL-037,DEC-132,relates_to
 TEST-001,FR-016,tests
 TEST-001,FR-017,tests
