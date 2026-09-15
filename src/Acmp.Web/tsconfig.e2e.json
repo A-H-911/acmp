@@ -23,5 +23,5 @@
     // lets source import a ".ts" path does not apply and would hide a genuinely wrong import here.
     "allowImportingTsExtensions": false
   },
-  "include": ["e2e", "playwright.config.ts", "uat-login-probe.mjs", "uat-invite-probe.mjs"]
+  "include": ["e2e", "playwright.config.ts", "uat-login-probe.mjs", "uat-invite-probe.mjs", "src/test/a11yRoutes.ts"]
 }
