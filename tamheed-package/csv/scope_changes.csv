@@ -529,3 +529,23 @@ SC-072,DEC-196,"**`AC-170` IS ADDED (THE AUTOMATED LEG OF `NFR-032` OVER EVERY S
 **HOW THE ROWS CLOSE.** `WBS-40.6` is done-claimed on `AC-170` Met. `NFR-032` is fully verified only when `WBS-40.9` has also run.
 
 **APPLICATION ORDER (`LL-042`, `SC-071`'s precedent):** this row Approved -> `AC-170` written `Proposed` -> the OPERATOR approves its text -> `AC-170` Approved and the two `WBS` texts applied in one batch -> all re-read -> this row `Merged`.",1,Merged,,
+SC-073,DEC-198,"**`AC-171` IS ADDED (`NFR-033`'S AUTOMATED LEG: CONTRAST PAINTED AND DECLARED, AND `DEF-186`'S FIX); `WBS-40.8`'S TEXT IS REPLACED AND NAMES `AC-171`; `WBS-40.9` TAKES `NFR-033`'S MANUAL CONTRAST CHECK. NO REQUIREMENT'S TEXT CHANGES.**
+
+**WHY A SCOPE CHANGE.** `WBS-40.8` planned a token-test extension only; `DEC-198` g1 adds the rendered check its requirement's Verification names (via the engine Lighthouse runs), g2 adds `DEF-186`'s fix, g3 moves the manual clause, g4 adds a criterion the item did not have.
+
+**THE NEW TEXT OF `WBS-40.8`, applied after `AC-171` is approved:** *`DW-072` / `NFR-033` (automated leg) + `DEF-186`: CONTRAST, PAINTED AND DECLARED. The E2E accessibility sweep turns axe's `color-contrast` rule on (the rule Lighthouse's contrast audit runs) for every route in `AC-170`'s manifest, in the light and dark themes and in EN and AR; the token-pair test gains the 3:1 threshold for UI components (borders, focus ring, disabled controls) and the normal, hover, focused and disabled states, and pairs `--text-3` with every surface it is painted on; the light palette's `--text-3` becomes `#626a75` (`DEF-186`, `ADR-0045`). `NFR-033`'s manual Colour Contrast Analyser check is `WBS-40.9`'s (`DEC-198` g3). **DONE-CLAIMED WHEN** `AC-171` is Met.*
+
+**THE ADDITION TO `WBS-40.9`, applied in the same batch:** its text gains *""It also performs `NFR-033`'s manual contrast check (e.g. Colour Contrast Analyser) on the light and dark themes, in EN and AR layouts (`DEC-198` g3).""*
+
+**HOW THE ROWS CLOSE.** `WBS-40.8` is done-claimed on `AC-171` Met; `DEF-186` closes Fixed with it. `NFR-033` is fully verified only when `WBS-40.9` has also run.
+
+**APPLICATION ORDER (`LL-042`, `SC-072`'s precedent):** this row Approved -> `AC-171` written `Proposed` -> the OPERATOR approves its text -> `AC-171` Approved and the two `WBS` texts applied in one batch -> all re-read -> this row `Merged`.",1,Merged,,
+SC-074,DEC-199,"**`AC-172` REPLACES `AC-171` (SUPERSEDED); `WBS-40.8`'S TEXT NAMES `AC-172` AND THE RAISED BORDER TOKENS. NO REQUIREMENT'S TEXT CHANGES.**
+
+**WHY A SCOPE CHANGE.** `AC-171` is Approved and frozen. `DEC-199` h2 (disabled controls follow WCAG's exemption) contradicts its clause requiring 3:1 for disabled controls, so it is replaced, never edited; h1 keeps its all-borders clause and makes it concrete.
+
+**THE NEW TEXT OF `WBS-40.8`, applied after `AC-172` is approved:** *`DW-072` / `NFR-033` (automated leg) + `DEF-186`: CONTRAST, PAINTED AND DECLARED. The E2E accessibility sweep turns axe's `color-contrast` rule on (the rule Lighthouse's contrast audit runs) for every route in `AC-170`'s manifest, in the light and dark themes and in EN and AR. The token-pair test gains the 3:1 threshold for every border token against every surface it can be painted on, in both palettes, and for the focus ring; the normal, hover and focused states; the disabled exemption, recorded (`DEC-199` h2); and `--text-3` paired with every surface it is painted on. The border tokens are raised, same hue (`DEC-199` h1, `ADR-0045`) - a visible restyle of every card, table and divider line: light `--border-soft` `#848688`, `--border` `#7d7f83`, `--border-strong` `#71757a`; dark `--border-soft` `#666c72`, `--border` `#6c7279`, `--border-strong` `#747d85`. The light palette's `--text-3` becomes `#626a75` (`DEF-186`). `NFR-033`'s manual Colour Contrast Analyser check is `WBS-40.9`'s (`DEC-198` g3). **DONE-CLAIMED WHEN** `AC-172` is Met.*
+
+**HOW THE ROWS CLOSE.** `WBS-40.8` is done-claimed on `AC-172` Met; `DEF-186` closes Fixed with it.
+
+**APPLICATION ORDER (`LL-042`, `SC-071`'s precedent):** this row Approved -> `AC-172` written `Proposed` -> the OPERATOR approves its text -> `AC-172` Approved, `AC-171` Superseded (superseded_by `AC-172`, retired_in 1) and `WBS-40.8`'s text applied in one batch -> all re-read -> this row `Merged`.",1,Merged,,

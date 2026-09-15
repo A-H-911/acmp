@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>AC-172 approval (replaces AC-171; WBS-40.8, SC-074)</title>
+<style>
+ body{font:15px/1.55 system-ui,sans-serif;max-width:60rem;margin:2rem auto;padding:0 1rem;color:#111}
+ h1{font-size:1.5rem} h2{font-size:1rem;font-family:ui-monospace,monospace;margin:2rem 0 .4rem;color:#004080}
+ pre{background:#f6f7f9;border:1px solid #d8dbe0;border-left:3px solid #004080;padding:.8rem;
+     white-space:pre-wrap;word-wrap:break-word;font:13px/1.5 ui-monospace,monospace}
+ .note{background:#fffbe6;border:1px solid #e8d98a;padding:.7rem;font-size:.9rem}
+ .intro{border:1px solid #c9ced6;border-radius:4px;padding:.2rem 1rem 1rem;margin:1.5rem 0}
+ .unverified{background:#fdecea;border:1px solid #e0a6a0;padding:.6rem;font-size:.9rem;margin:1rem -.4rem}
+ table{border-collapse:collapse;margin:.6rem 0} th,td{border:1px solid #d8dbe0;padding:.35rem .6rem;
+ text-align:left;font-size:.92rem;vertical-align:top} th{background:#f0f2f5}
+</style></head><body>
+<h1>AC-172 approval (replaces AC-171; WBS-40.8, SC-074)</h1>
+<p class="note">Every block below is quoted <b>verbatim</b> in one process from the tamheed exports under
+<code>tamheed-package/exports/</code>, written by the MCP tool <code>entity_export</code> (package digest
+<code>5064cbced115eb47e631f8a3fa9ad75fbab933b25482c005368dcb70b1372371</code> &mdash; <code>package_verify()</code> returning the same value means nothing has
+changed since), or from the working tree, and each was re-read from its own source
+and confirmed byte-identical after this page was written. Nothing here was re-typed (<code>LL-001</code>,
+<code>LL-011</code>). <b>Provenance is guaranteed; correctness is not</b> — whether a quoted claim is true is
+part of what is being asked. The connective prose around these blocks carries no such guarantee
+(<code>LL-023</code>).</p>
+<div class="intro"><p class="unverified"><b>The section below is the agent's own framing, not a
+quotation.</b> Nothing in it carries the provenance guarantee the blocks beneath it do; check any claim in it
+against those blocks.</p>
+<p>AC-172 approval, 2026-09-15. Every record below is quoted from the store by the generator; this paragraph is the
+only text on the page that is not.</p>
+<p>The question: approve <code>AC-172</code>'s text as written (Proposed, below), or change it. It is <code>AC-171</code> (also
+quoted, Approved) with three changes: the disabled-controls clause becomes WCAG 2.2 AA's exemption, the border clause
+names the three border tokens, and the verification control uses a border or hover token instead of a disabled one. On
+approval, in one batch: <code>AC-172</code> Approved, <code>AC-171</code> Superseded, and <code>WBS-40.8</code> takes the text written
+inside <code>SC-074</code>; then all are re-read and <code>SC-074</code> is set Merged, and the build starts.</p>
+</div>
+<h2>AC-172  [acceptance_criteria]</h2>
+<pre>id: AC-172
+title: **Given** the SPA in the E2E stack and every route in `AC-170`'s manifest, each opened as a principal who may open it, in the LIGHT and the DARK theme, in English and in Arabic &lt;br&gt; **When** the accessibility sweep runs on a pull request &lt;br&gt; **Then** axe-core's `color-contrast` rule - the rule Lighthouse's contrast audit runs - is switched ON and reports ZERO violations on every route in all four combinations of theme and language, so rendered text meets 4.5:1, and 3:1 where it is large; **And** the design-token contrast test asserts the 3:1 threshold for UI components - EVERY border token (`--border-soft`, `--border`, `--border-strong`) against EVERY surface token it can be painted on, in both palettes, and the focus ring - and covers the normal, hover and focused states, while DISABLED controls follow WCAG 2.2 AA's exemption for inactive components (1.4.3, 1.4.11), which the test records explicitly; and it pairs the muted-text token `--text-3` with EVERY surface it is painted on, not only `--surface`; **And** the border tokens are raised to meet that threshold in both palettes, keeping the soft &lt; normal &lt; strong order of weight, and the light palette's `--text-3` is `#626a75` (`DEF-186`), which stays lighter than `--text-2` (`ADR-0045`: AA governs). `NFR-033`'s manual Colour Contrast Analyser check is NOT part of this criterion; it is `WBS-40.9`'s (`DEC-198` g3). ⚠ THIS CRITERION REPLACES `AC-171`, whose disabled-controls clause it changes (`DEC-199`, `SC-074`). **Verified by** the Playwright sweep in CI with `color-contrast` on, passing in both browser projects in both themes and both languages; the token test in CI; a control in which `--text-3` is set back to `#6b7480` and both the sweep and the token test fail, naming the routes and the pairs; and a control in which one border or hover token is set below 3:1 and the token test fails naming that pair.
+statement: **Given** the SPA in the E2E stack and every route in `AC-170`'s manifest, each opened as a principal who may open it, in the LIGHT and the DARK theme, in English and in Arabic &lt;br&gt; **When** the accessibility sweep runs on a pull request &lt;br&gt; **Then** axe-core's `color-contrast` rule - the rule Lighthouse's contrast audit runs - is switched ON and reports ZERO violations on every route in all four combinations of theme and language, so rendered text meets 4.5:1, and 3:1 where it is large; **And** the design-token contrast test asserts the 3:1 threshold for UI components - EVERY border token (`--border-soft`, `--border`, `--border-strong`) against EVERY surface token it can be painted on, in both palettes, and the focus ring - and covers the normal, hover and focused states, while DISABLED controls follow WCAG 2.2 AA's exemption for inactive components (1.4.3, 1.4.11), which the test records explicitly; and it pairs the muted-text token `--text-3` with EVERY surface it is painted on, not only `--surface`; **And** the border tokens are raised to meet that threshold in both palettes, keeping the soft &lt; normal &lt; strong order of weight, and the light palette's `--text-3` is `#626a75` (`DEF-186`), which stays lighter than `--text-2` (`ADR-0045`: AA governs). `NFR-033`'s manual Colour Contrast Analyser check is NOT part of this criterion; it is `WBS-40.9`'s (`DEC-198` g3). ⚠ THIS CRITERION REPLACES `AC-171`, whose disabled-controls clause it changes (`DEC-199`, `SC-074`). **Verified by** the Playwright sweep in CI with `color-contrast` on, passing in both browser projects in both themes and both languages; the token test in CI; a control in which `--text-3` is set back to `#6b7480` and both the sweep and the token test fail, naming the routes and the pairs; and a control in which one border or hover token is set below 3:1 and the token test fails naming that pair.
+requirement_id: NFR-033
+slice_id: SL-043
+lifecycle_status: Proposed
+introduced_in: 1
+source_kind: clarification
+source_span: DEC-199 h1-h3; DEC-198 g1-g4; DEF-186; replaces AC-171 per SC-074.</pre>
+<h2>AC-171  [acceptance_criteria]</h2>
+<pre>id: AC-171
+title: **Given** the SPA in the E2E stack and every route in `AC-170`'s manifest, each opened as a principal who may open it, in the LIGHT and the DARK theme, in English and in Arabic &lt;br&gt; **When** the accessibility sweep runs on a pull request &lt;br&gt; **Then** axe-core's `color-contrast` rule - the rule Lighthouse's contrast audit runs - is switched ON and reports ZERO violations on every route in all four combinations of theme and language, so rendered text meets 4.5:1, and 3:1 where it is large; **And** the design-token contrast test asserts the 3:1 threshold for UI components - borders against the surfaces they sit on, the focus ring, and disabled controls - and covers the normal, hover, focused and disabled states, in both palettes, and pairs the muted-text token `--text-3` with EVERY surface it is painted on, not only `--surface`; **And** the light palette's `--text-3` is `#626a75` (`DEF-186`, `ADR-0045`: AA governs), which stays lighter than `--text-2`, while the dark palette is unchanged. `NFR-033`'s manual Colour Contrast Analyser check is NOT part of this criterion; it is `WBS-40.9`'s (`DEC-198` g3). **Verified by** the Playwright sweep in CI with `color-contrast` on, passing in both browser projects in both themes and both languages; the token test in CI; a control in which `--text-3` is set back to `#6b7480` and both the sweep and the token test fail, naming the routes and the pairs; and a control in which one hover or disabled token is set below 3:1 and the token test fails naming that pair.
+statement: **Given** the SPA in the E2E stack and every route in `AC-170`'s manifest, each opened as a principal who may open it, in the LIGHT and the DARK theme, in English and in Arabic &lt;br&gt; **When** the accessibility sweep runs on a pull request &lt;br&gt; **Then** axe-core's `color-contrast` rule - the rule Lighthouse's contrast audit runs - is switched ON and reports ZERO violations on every route in all four combinations of theme and language, so rendered text meets 4.5:1, and 3:1 where it is large; **And** the design-token contrast test asserts the 3:1 threshold for UI components - borders against the surfaces they sit on, the focus ring, and disabled controls - and covers the normal, hover, focused and disabled states, in both palettes, and pairs the muted-text token `--text-3` with EVERY surface it is painted on, not only `--surface`; **And** the light palette's `--text-3` is `#626a75` (`DEF-186`, `ADR-0045`: AA governs), which stays lighter than `--text-2`, while the dark palette is unchanged. `NFR-033`'s manual Colour Contrast Analyser check is NOT part of this criterion; it is `WBS-40.9`'s (`DEC-198` g3). **Verified by** the Playwright sweep in CI with `color-contrast` on, passing in both browser projects in both themes and both languages; the token test in CI; a control in which `--text-3` is set back to `#6b7480` and both the sweep and the token test fail, naming the routes and the pairs; and a control in which one hover or disabled token is set below 3:1 and the token test fails naming that pair.
+requirement_id: NFR-033
+slice_id: SL-043
+lifecycle_status: Approved
+introduced_in: 1
+source_kind: clarification
+source_span: DEC-198 g1-g4; DW-072; DEF-186; written before the build per SC-073.</pre>
+<h2>SC-074  [scope_changes]</h2>
+<pre>id: SC-074
+decision_ref: DEC-199
+description: **`AC-172` REPLACES `AC-171` (SUPERSEDED); `WBS-40.8`'S TEXT NAMES `AC-172` AND THE RAISED BORDER TOKENS. NO REQUIREMENT'S TEXT CHANGES.**
+
+**WHY A SCOPE CHANGE.** `AC-171` is Approved and frozen. `DEC-199` h2 (disabled controls follow WCAG's exemption) contradicts its clause requiring 3:1 for disabled controls, so it is replaced, never edited; h1 keeps its all-borders clause and makes it concrete.
+
+**THE NEW TEXT OF `WBS-40.8`, applied after `AC-172` is approved:** *`DW-072` / `NFR-033` (automated leg) + `DEF-186`: CONTRAST, PAINTED AND DECLARED. The E2E accessibility sweep turns axe's `color-contrast` rule on (the rule Lighthouse's contrast audit runs) for every route in `AC-170`'s manifest, in the light and dark themes and in EN and AR. The token-pair test gains the 3:1 threshold for every border token against every surface it can be painted on, in both palettes, and for the focus ring; the normal, hover and focused states; the disabled exemption, recorded (`DEC-199` h2); and `--text-3` paired with every surface it is painted on. The border tokens are raised, same hue (`DEC-199` h1, `ADR-0045`) - a visible restyle of every card, table and divider line: light `--border-soft` `#848688`, `--border` `#7d7f83`, `--border-strong` `#71757a`; dark `--border-soft` `#666c72`, `--border` `#6c7279`, `--border-strong` `#747d85`. The light palette's `--text-3` becomes `#626a75` (`DEF-186`). `NFR-033`'s manual Colour Contrast Analyser check is `WBS-40.9`'s (`DEC-198` g3). **DONE-CLAIMED WHEN** `AC-172` is Met.*
+
+**HOW THE ROWS CLOSE.** `WBS-40.8` is done-claimed on `AC-172` Met; `DEF-186` closes Fixed with it.
+
+**APPLICATION ORDER (`LL-042`, `SC-071`'s precedent):** this row Approved -&gt; `AC-172` written `Proposed` -&gt; the OPERATOR approves its text -&gt; `AC-172` Approved, `AC-171` Superseded (superseded_by `AC-172`, retired_in 1) and `WBS-40.8`'s text applied in one batch -&gt; all re-read -&gt; this row `Merged`.
+iteration: 1
+lifecycle_status: Approved</pre>
+<h2>DEC-199  [decisions]</h2>
+<pre>id: DEC-199
+title: OPERATOR RULING, 2026-09-15 (`AC-171`'S BORDER CLAUSE): EVERY BORDER MEETS 3:1 AS `AC-171` READS - A RESTYLE OF EVERY CARD, TABLE AND DIVIDER LINE - WHILE DISABLED CONTROLS FOLLOW WCAG 2.2 AA'S EXEMPTION; `AC-171` IS THEREFORE SUPERSEDED BY `AC-172`.
+decision: Asked over `tamheed-package/ac171-premise-slate.html` (9 blocks, digest `0371ab3f`), after the agent found - before writing any code - that its own drafting of `AC-171` had never checked that border tokens could meet 3:1 (`PE-1168`): every border token is 1.08-2.01:1 in both palettes.
+
+h1 - **ALL BORDERS AT 3:1** (operator: *"Keep AC-171: all borders"*; the other option was superseding it to cover only the borders that identify a form control, via a new control-border token). Every border token is raised to meet 3:1 on every surface it can be painted on, in both palettes, keeping the soft &lt; normal &lt; strong order of weight; `ADR-0045` (AA governs) applies. The agent's computed values, same hue: light `--border-soft` `#848688`, `--border` `#7d7f83`, `--border-strong` `#71757a`; dark `--border-soft` `#666c72`, `--border` `#6c7279`, `--border-strong` `#747d85`.
+
+h2 - **DISABLED CONTROLS FOLLOW WCAG'S EXEMPTION** (operator: *"Follow WCAG's exemption"*; the other option was keeping 3:1 for disabled). WCAG 2.2 AA exempts inactive components from 1.4.3 and 1.4.11; the token test records the exemption explicitly.
+
+h3 - **THE CONSEQUENCE, STATED.** h2 contradicts `AC-171`'s own clause (3:1 for *"disabled controls"*), and approved criteria are frozen, so `AC-171` is superseded by `AC-172` - identical except that its disabled clause becomes the exemption, the border clause names the three tokens, and its verification control uses a border or hover token instead of a disabled one (`SC-074`). `AC-172` is drafted `Proposed` for the operator's approval.
+rationale: Options were put without a recommendation (`DEC-140` d3). The combination of the two answers was put back to the operator as `AC-172`'s text rather than resolved silently.
+lifecycle_status: Approved
+source_kind: clarification
+source_span: Operator ruling 2026-09-15 over ac171-premise-slate.html (digest 0371ab3f); PE-1168.</pre>
+<h2>WBS-40.8  [wbs_items]</h2>
+<pre>id: WBS-40.8
+title: `DW-072` / `NFR-033` (automated leg) + `DEF-186`: CONTRAST, PAINTED AND DECLARED. The E2E accessibility sweep turns axe's `color-contrast` rule on (the rule Lighthouse's contrast audit runs) for every route in `AC-170`'s manifest, in the light and dark themes and in EN and AR; the token-pair test gains the 3:1 threshold for UI components (borders, focus ring, disabled controls) and the normal, hover, focused and disabled states, and pairs `--text-3` with every surface it is painted on; the light palette's `--text-3` becomes `#626a75` (`DEF-186`, `ADR-0045`). `NFR-033`'s manual Colour Contrast Analyser check is `WBS-40.9`'s (`DEC-198` g3). **DONE-CLAIMED WHEN** `AC-171` is Met.
+phase_id: PH-7
+slice_id: SL-043
+effort: S
+lifecycle_status: Approved
+source_kind: clarification
+source_span: DW-072; DEC-150 d4/d8, operator interview 2026-09-08. Scoped by SC-056.
+custom_attributes: {"title_before_sc073":"`DW-072`: THE SECOND CONTRAST THRESHOLD AND THE FOUR STATES. `NFR-033` (Must) names 4.5:1 for body text AND 3:1 for large text and UI components, across normal, hover, focused and disabled. `contrast.test.ts` asserts 20 token pairs at 4.5:1 in both palettes, with a real anti-vacuity guard — and NOT ONE pair uses 3:1, and the four states are absent from the pair table entirely.\n\n**BUILD.** 3:1 cases (border-on-background, focus ring, disabled state) added to the existing test, which already runs in CI and already fails on a body-text regression.\n\n⚠ **DO NOT UNDERSELL WHAT IS THERE**: this test was once falsely green because a plain `indexOf` matched its selector inside a prose comment and returned the LIGHT palette for every dark case, for the file's whole life until 2026-08-10. Whatever is added inherits that lesson — the guard must be unable to pass by comparing nothing to nothing.\n\n**DONE-CLAIMED WHEN** both thresholds and all four states have cases, and a deliberately failing token is refused.","amended_2026_09_15":"Title replaced by SC-073 (DEC-198) on the operator approving AC-171: the rendered contrast check NFR-033 names (via axe color-contrast, the engine Lighthouse runs) and DEF-186's fix were added. Previous title kept in title_before_sc073."}</pre>
+</body></html>
