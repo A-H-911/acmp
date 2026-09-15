@@ -87,7 +87,8 @@ describe('AC-173: no stylesheet dims content with opacity', () => {
     expect(offenders, 'mute with design tokens instead (DEF-190, ADR-0045)').toEqual([]);
   });
 
-  // The six states DEF-190 named, by name, so a regression on any of them reads as that state.
+  // Every rule that used to dim content, by name, so a regression on any of them reads as that state: DEF-190's six,
+  // DEF-188's tile, and DEF-191's hovered dashboard row - a hover the general check above exempts (DEC-201).
   for (const [file, selector] of [
     ['features/governance/governance.css', '.adr-body.adr-body-muted'],
     ['features/decisions/decisions.css', '.dec-body-muted'],
@@ -96,6 +97,7 @@ describe('AC-173: no stylesheet dims content with opacity', () => {
     ['features/voting/voting.css', '.vote-closed-sub'],
     ['features/traceability/graph.css', '.ig-node--dim'],
     ['styles/administration.css', '.adm-tile-muted'],
+    ['features/dashboard/dashboard.css', '.dash-keylist a:hover'],
   ] as const) {
     it(`${selector} (${file}) is muted without opacity`, () => {
       const source = readFileSync(join(SRC, file), 'utf8');
