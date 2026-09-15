@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>DEF-190 - opacity-dimmed text on unswept states</title>
+<style>
+ body{font:15px/1.55 system-ui,sans-serif;max-width:60rem;margin:2rem auto;padding:0 1rem;color:#111}
+ h1{font-size:1.5rem} h2{font-size:1rem;font-family:ui-monospace,monospace;margin:2rem 0 .4rem;color:#004080}
+ pre{background:#f6f7f9;border:1px solid #d8dbe0;border-left:3px solid #004080;padding:.8rem;
+     white-space:pre-wrap;word-wrap:break-word;font:13px/1.5 ui-monospace,monospace}
+ .note{background:#fffbe6;border:1px solid #e8d98a;padding:.7rem;font-size:.9rem}
+ .intro{border:1px solid #c9ced6;border-radius:4px;padding:.2rem 1rem 1rem;margin:1.5rem 0}
+ .unverified{background:#fdecea;border:1px solid #e0a6a0;padding:.6rem;font-size:.9rem;margin:1rem -.4rem}
+ table{border-collapse:collapse;margin:.6rem 0} th,td{border:1px solid #d8dbe0;padding:.35rem .6rem;
+ text-align:left;font-size:.92rem;vertical-align:top} th{background:#f0f2f5}
+</style></head><body>
+<h1>DEF-190 - opacity-dimmed text on unswept states</h1>
+<p class="note">Every block below is quoted <b>verbatim</b> in one process from the tamheed exports under
+<code>tamheed-package/exports/</code>, written by the MCP tool <code>entity_export</code> (package digest
+<code>3e7630f970bb42a1c5094c1573e8bbd3407b67883aced6769166061282894bf8</code> &mdash; <code>package_verify()</code> returning the same value means nothing has
+changed since), or from the working tree, and each was re-read from its own source
+and confirmed byte-identical after this page was written. Nothing here was re-typed (<code>LL-001</code>,
+<code>LL-011</code>). <b>Provenance is guaranteed; correctness is not</b> — whether a quoted claim is true is
+part of what is being asked. The connective prose around these blocks carries no such guarantee
+(<code>LL-023</code>).</p>
+<div class="intro"><p class="unverified"><b>The section below is the agent's own framing, not a
+quotation.</b> Nothing in it carries the provenance guarantee the blocks beneath it do; check any claim in it
+against those blocks.</p>
+<p>DEF-190, 2026-09-15. Every record and file excerpt below is quoted by the generator. This paragraph is the
+only text on the page that is not. The contrast ratios in <code>DEF-190</code> are the agent's calculation, not axe
+measurements. The same method reproduced axe's own two readings on <code>DEF-188</code>'s chip to within 0.02.</p>
+<p>The <code>WBS-40.8</code> build is committed on its branch and not pushed. Its sweep found <code>DEF-188</code> (the
+Administration tiles), which is fixed there. A scan for the same device (<code>opacity</code> on content that is not a
+disabled control) then found the six states in <code>DEF-190</code>. The sweep has not seen them, because its seeded
+records never reach them. <code>AC-172</code> covers the manifest routes as the sweep opens them, so it can be Met
+without these six. Also quoted: <code>WBS-40.9</code> (the manual contrast check), <code>ADR-0045</code> (AA governs
+where a design cannot meet both), <code>DEC-199</code> (disabled controls are exempt), the fixed tile rule, and the six
+rules.</p>
+<p>The question is what happens to <code>DEF-190</code>.</p>
+</div>
+<h2>DEF-190  [defect]</h2>
+<pre>id: DEF-190
+title: SIX MORE STATES DIM TEXT WITH CSS `opacity` BELOW WCAG AA, ON SCREENS THE CONTRAST SWEEP OPENS ONLY IN THEIR DEFAULT STATE. The device `DEF-188` fixed on the Administration tiles is used for six other live (not disabled) states; the sweep's seeded records never reach them, so axe has not seen them. Computed 2026-09-15 by group opacity over the page behind (the method reproduces axe's measured 2.91 and 3.64 on `DEF-188`'s chip to 0.02), light / dark: (1) `.adr-body-muted` 0.62 - a Superseded/Deprecated ADR's body AND a retired invariant's (`AdrPage`, `InvariantPage`): `--text-2` 2.81 / 3.55, `--text-3` 2.61 / 2.72, `--accent` 2.94 / 3.61; (2) `.dec-body-muted` 0.62 - a superseded decision's body (`DecisionPage`): same figures; (3) `.mom-doc-muted` 0.72 - superseded minutes (`MeetingMinutes`): `--text-2` 3.43 / 4.36, `--text-3` 3.14 / 3.24; (4) `.act-toggle-on` 0.7 - the 10px 'On' label in the active 'Overdue' filter on `/actions`: `--accent` on `--primary-tint` 3.12 / 3.99; (5) `.vote-closed-sub` 0.85 - a closed vote's 'closed at' line on the success fill (`VotePage`): 4.08 light (dark 5.48 passes); (6) `.ig-node--dim` 0.3 - impact-graph nodes outside the active highlight (`ImpactGraph`): 1.59-2.36 in both. `--text` itself stays above 4.5 under 0.62. Each is a design choice to say 'retired' or 'secondary'; whether each is fixed, and how (tokens instead of opacity, as `DEF-188`; or seeding those states into the sweep), is not settled.
+severity: medium
+lifecycle_status: Open
+found_in: SL-043
+custom_attributes: {"found_by":"platform scan for opacity on non-disabled selectors after DEF-188, 2026-09-15 (grep opacity over src/**/*.css; disabled/hover/animation uses excluded as exempt or non-text)","measured":"scratch opacity-ratios.mjs over tokens.css (light palette and [data-theme=dark]); not yet measured by axe because no seeded record is in these states","related":"NFR-033, AC-172, DEF-188, ADR-0045, DEC-199 h2 (disabled controls are exempt; these are not disabled)."}</pre>
+<h2>DEF-188  [defect]</h2>
+<pre>id: DEF-188
+title: THE ADMINISTRATION TILES DIMMED WITH CSS `opacity` FAILED WCAG AA CONTRAST, AND THE DESIGN ASKS FOR IT. Found 2026-09-15 by `WBS-40.8`'s sweep with axe `color-contrast` ON: on `/admin/users` (System Health, the default tab) the unmonitored 'Webex / Tarseem' tile was `.adm-tile-muted { opacity: 0.62 }` (`administration.css`), so its 'Not monitored' status chip rendered `#858c95` on `#ebeef1` = 2.91:1 in the light theme and `#717983` on `#1b2229` = 3.64:1 in the dark, against 4.5:1 for 11.5px text (`NFR-033`); computed, its `--text-2`/`--text-3` lines sat at 2.6-2.8:1. The Notification Settings tab's inactive channels use the same class. The `.dc.html` itself dims the tile (`ACMP Administration.dc.html`, `style="opacity:{{ h.op }}"`), so the build matched the design and the design fails AA (`ADR-0045`: AA governs). Fix (this branch): the muted tile loses the opacity and is muted with tokens instead - the `--subtle` fill, no shadow, a `--sunken` icon well with `--text-3` - so every line inside keeps a pair `contrast.test.ts` holds at AA. The same device on other screens, on states the sweep does not seed, is `DEF-190`.
+severity: medium
+lifecycle_status: Open
+found_in: SL-043
+custom_attributes: {"found_by":"WBS-40.8 E2E sweep (rtl-a11y.spec.ts, color-contrast on), local E2E stack, chromium, 2026-09-15: 'every Administrator route is axe-clean in English, light theme' and '... English, dark theme' failed on /admin/users, 1 node each; after DEF-189's fix the two Arabic runs failed on the same node too","measured":"axe: .neutral chip 2.91 (fg #858c95, bg #ebeef1, 11.5px) light; 3.64 (fg #717983, bg #1b2229) dark. Computed (group opacity over --bg-app): chip 2.92 / 3.66 - the model reproduces axe; --text-2 2.81 / 3.55, --text-3 2.61 / 2.72.","fix_verified_locally":"2026-09-15, rebuilt web: rtl-a11y.spec.ts 34/34 on chromium + msedge, every Administrator sweep clean in all four theme x language modes.","split_2026_09_15":"The first text of this row also listed the other opacity-dimmed classes; they moved to DEF-190 so this row can close on its own evidence.","related":"NFR-033, AC-172, WBS-40.8, ADR-0045, INV-014, DEC-199, DEF-189, DEF-190."}
+last_referenced: 2026-09-15T14:01:28Z</pre>
+<h2>AC-172  [acceptance-criterion]</h2>
+<pre>id: AC-172
+title: **Given** the SPA in the E2E stack and every route in `AC-170`'s manifest, each opened as a principal who may open it, in the LIGHT and the DARK theme, in English and in Arabic &lt;br&gt; **When** the accessibility sweep runs on a pull request &lt;br&gt; **Then** axe-core's `color-contrast` rule - the rule Lighthouse's contrast audit runs - is switched ON and reports ZERO violations on every route in all four combinations of theme and language, so rendered text meets 4.5:1, and 3:1 where it is large; **And** the design-token contrast test asserts the 3:1 threshold for UI components - EVERY border token (`--border-soft`, `--border`, `--border-strong`) against EVERY surface token it can be painted on, in both palettes, and the focus ring - and covers the normal, hover and focused states, while DISABLED controls follow WCAG 2.2 AA's exemption for inactive components (1.4.3, 1.4.11), which the test records explicitly; and it pairs the muted-text token `--text-3` with EVERY surface it is painted on, not only `--surface`; **And** the border tokens are raised to meet that threshold in both palettes, keeping the soft &lt; normal &lt; strong order of weight, and the light palette's `--text-3` is `#626a75` (`DEF-186`), which stays lighter than `--text-2` (`ADR-0045`: AA governs). `NFR-033`'s manual Colour Contrast Analyser check is NOT part of this criterion; it is `WBS-40.9`'s (`DEC-198` g3). ⚠ THIS CRITERION REPLACES `AC-171`, whose disabled-controls clause it changes (`DEC-199`, `SC-074`). **Verified by** the Playwright sweep in CI with `color-contrast` on, passing in both browser projects in both themes and both languages; the token test in CI; a control in which `--text-3` is set back to `#6b7480` and both the sweep and the token test fail, naming the routes and the pairs; and a control in which one border or hover token is set below 3:1 and the token test fails naming that pair.
+statement: **Given** the SPA in the E2E stack and every route in `AC-170`'s manifest, each opened as a principal who may open it, in the LIGHT and the DARK theme, in English and in Arabic &lt;br&gt; **When** the accessibility sweep runs on a pull request &lt;br&gt; **Then** axe-core's `color-contrast` rule - the rule Lighthouse's contrast audit runs - is switched ON and reports ZERO violations on every route in all four combinations of theme and language, so rendered text meets 4.5:1, and 3:1 where it is large; **And** the design-token contrast test asserts the 3:1 threshold for UI components - EVERY border token (`--border-soft`, `--border`, `--border-strong`) against EVERY surface token it can be painted on, in both palettes, and the focus ring - and covers the normal, hover and focused states, while DISABLED controls follow WCAG 2.2 AA's exemption for inactive components (1.4.3, 1.4.11), which the test records explicitly; and it pairs the muted-text token `--text-3` with EVERY surface it is painted on, not only `--surface`; **And** the border tokens are raised to meet that threshold in both palettes, keeping the soft &lt; normal &lt; strong order of weight, and the light palette's `--text-3` is `#626a75` (`DEF-186`), which stays lighter than `--text-2` (`ADR-0045`: AA governs). `NFR-033`'s manual Colour Contrast Analyser check is NOT part of this criterion; it is `WBS-40.9`'s (`DEC-198` g3). ⚠ THIS CRITERION REPLACES `AC-171`, whose disabled-controls clause it changes (`DEC-199`, `SC-074`). **Verified by** the Playwright sweep in CI with `color-contrast` on, passing in both browser projects in both themes and both languages; the token test in CI; a control in which `--text-3` is set back to `#6b7480` and both the sweep and the token test fail, naming the routes and the pairs; and a control in which one border or hover token is set below 3:1 and the token test fails naming that pair.
+requirement_id: NFR-033
+slice_id: SL-043
+lifecycle_status: Approved
+introduced_in: 1
+source_kind: clarification
+source_span: DEC-199 h1-h3; DEC-198 g1-g4; DEF-186; replaces AC-171 per SC-074.
+last_referenced: 2026-09-15T14:01:28Z</pre>
+<h2>WBS-40.9  [wbs-item]</h2>
+<pre>id: WBS-40.9
+title: `DW-041`: THE MANUAL WCAG 2.2 AA PASS axe CANNOT PERFORM. `NFR-030` (Must) claims all UI components conform to AA at 100% of applicable criteria; axe-core runs across ~40 component suites and a dedicated `a11y.test.tsx`, and every one is axe-clean — which is genuinely strong and is a different property. axe cannot judge whether alt text is MEANINGFUL, whether focus order is LOGICAL, whether an error message is ACTIONABLE, or whether a reading sequence works in Arabic RTL.
+
+**BUILD.** A keyboard-and-screen-reader pass over the primary flows in EN and RTL against the AA checklist, recording what it finds per criterion. Sized by the row itself as a day or two, not a project.
+
+⚠ **DO NOT ADD AN ACCEPTANCE CRITERION FOR `NFR-030` TO CLOSE THIS.** A `Partial` verdict holds package readiness false permanently (acs-met counts by `retired_in` and needs the latest verdict Met), which is why the row exists instead of an AC.
+
+**DONE-CLAIMED WHEN** the pass is run and its findings recorded — including findings of conformance, so a later reader can tell a clean result from an unrun one.
+
+It also performs `NFR-032`'s manual screen-reader spot-check on the dashboard and diagram views, in EN and AR (`DEC-196` f3); its route - who listens - is still undecided (`DEC-195` e2).
+
+It also performs `NFR-033`'s manual contrast check (e.g. Colour Contrast Analyser) on the light and dark themes, in EN and AR layouts (`DEC-198` g3).
+phase_id: PH-7
+slice_id: SL-043
+effort: M
+lifecycle_status: Approved
+source_kind: clarification
+source_span: DW-041; DEC-150 d4/d8, operator interview 2026-09-08. Scoped by SC-056.
+custom_attributes: {"title_before_sc072":"`DW-041`: THE MANUAL WCAG 2.2 AA PASS axe CANNOT PERFORM. `NFR-030` (Must) claims all UI components conform to AA at 100% of applicable criteria; axe-core runs across ~40 component suites and a dedicated `a11y.test.tsx`, and every one is axe-clean — which is genuinely strong and is a different property. axe cannot judge whether alt text is MEANINGFUL, whether focus order is LOGICAL, whether an error message is ACTIONABLE, or whether a reading sequence works in Arabic RTL.\n\n**BUILD.** A keyboard-and-screen-reader pass over the primary flows in EN and RTL against the AA checklist, recording what it finds per criterion. Sized by the row itself as a day or two, not a project.\n\n⚠ **DO NOT ADD AN ACCEPTANCE CRITERION FOR `NFR-030` TO CLOSE THIS.** A `Partial` verdict holds package readiness false permanently (acs-met counts by `retired_in` and needs the latest verdict Met), which is why the row exists instead of an AC.\n\n**DONE-CLAIMED WHEN** the pass is run and its findings recorded — including findings of conformance, so a later reader can tell a clean result from an unrun one.","amended_2026_09_15":"SC-072 (DEC-196 f3) appended NFR-032's manual screen-reader spot-check to this item. Previous title kept in title_before_sc072.","title_before_sc073":"`DW-041`: THE MANUAL WCAG 2.2 AA PASS axe CANNOT PERFORM. `NFR-030` (Must) claims all UI components conform to AA at 100% of applicable criteria; axe-core runs across ~40 component suites and a dedicated `a11y.test.tsx`, and every one is axe-clean — which is genuinely strong and is a different property. axe cannot judge whether alt text is MEANINGFUL, whether focus order is LOGICAL, whether an error message is ACTIONABLE, or whether a reading sequence works in Arabic RTL.\n\n**BUILD.** A keyboard-and-screen-reader pass over the primary flows in EN and RTL against the AA checklist, recording what it finds per criterion. Sized by the row itself as a day or two, not a project.\n\n⚠ **DO NOT ADD AN ACCEPTANCE CRITERION FOR `NFR-030` TO CLOSE THIS.** A `Partial` verdict holds package readiness false permanently (acs-met counts by `retired_in` and needs the latest verdict Met), which is why the row exists instead of an AC.\n\n**DONE-CLAIMED WHEN** the pass is run and its findings recorded — including findings of conformance, so a later reader can tell a clean result from an unrun one.\n\nIt also performs `NFR-032`'s manual screen-reader spot-check on the dashboard and diagram views, in EN and AR (`DEC-196` f3); its route - who listens - is still undecided (`DEC-195` e2).","amended_2026_09_15_sc073":"SC-073 (DEC-198 g3) appended NFR-033's manual contrast check to this item. Previous title kept in title_before_sc073."}</pre>
+<h2>ADR-0045  [adr]</h2>
+<pre>id: ADR-0045
+title: ADR-0045: The calendar meeting chip is floored at a 24 px target box. `INV-014`'s AA clause governs its px-literal clause where the reference design cannot satisfy both — the invariant is applied, not set aside.
+context: `INV-014` reads, in one statement: *"Any screen with a matching `.dc.html` matches it exactly — tokens/anatomy/states/iconography/RTL/light-dark/copy/**AA** — composed from the shared design system."* **Both the pixel literals and AA conformance are clauses of the SAME invariant.** No decision in this package had ever had to choose between them, because until now they had never disagreed.
+
+They disagree on the calendar day-cell event chip. `features/topics/Calendar.tsx` renders each scheduled meeting as a `&lt;button className="cal-event"&gt;`; `topics.css` styles it at `font-size: 10.5px` with `padding-block: 3px`, both taken from `ACMP Backlog &amp; Topic.dc.html`, giving a box about **21 px** tall. WCAG 2.2 SC 2.5.8 `target-size` (Minimum) requires **24×24 CSS px** on an interactive target. `inline-size: 100%` satisfies the width; the height is short by roughly 3 px.
+
+⚠ **THE PROJECT ADMITTED THIS CRITERION DELIBERATELY AND IN WRITING.** `rtl-a11y.spec.ts`'s tag list carries a comment: *"D-23: include WCAG 2.2 AA — the machine-testable addition over 2.1 is `target-size` (SC 2.5.8, &gt;=24x24px)"*. The rule was not inherited by accident from a default rule set; it was chosen, named, and its cost anticipated.
+
+⚠ **THE CONFLICT WAS INVISIBLE FOR WEEKS AND THAT IS `DEF-126`.** The e2e seed pinned every meeting to a fixed `2026-09-01`, both calendars open on the CURRENT month, so no chip ever rendered under axe and the sweep passed over an empty grid from `WBS-24.2` until the clock reached that date. The conflict is not new; only its visibility is.
+
+⚠ A **sibling** exists: `features/meetings/MeetingsCalendar.tsx`'s `.mt-cal-event`, an `&lt;a&gt;` at `font-size: 9.5px` / `padding-block: 2px`, about **17 px** — worse, on a route (`/meetings`) that no accessibility sweep visited at all.
+decision: d1 — **BOTH CHIPS ARE FLOORED AT A 24 px TARGET BOX AND THE TYPE IS NOT TOUCHED.** `.cal-event` gains `min-block-size: 24px` (it is already `display: flex; align-items: center`, so the content stays optically where the mock draws it and the chip grows downward by ~3 px). `.mt-cal-event` gains `min-block-size: 24px` and `line-height: 20px` — 20 + 2 + 2 = 24 exactly — keeping `display: block` because its ellipsis depends on it. **`font-size` stays 10.5 px and 9.5 px respectively: the drawn TYPE is unchanged, only the hit box grows.**
+
+d2 — **A FLOOR, NOT MORE PADDING, AND THE DISTINCTION IS THE POINT.** Padding is derived from the type and would have to be re-derived every time the type or the inherited line-height moves; `min-block-size` states the CONFORMANCE THRESHOLD ITSELF, so it keeps holding when someone changes the font stack. A value that encodes the requirement survives edits that a value computed from the requirement does not.
+
+d3 — **`INV-014` IS APPLIED, NOT WAIVED, AND NO NEW ADR IS OWED FOR THE NEXT CASE.** Where a `.dc.html` reference cannot satisfy both the px-literal clause and the AA clause, **the AA clause governs and the deviation is recorded**. AA is a conformance obligation the project has committed to and can fail an audit on; a px literal is a fidelity target whose own invariant already names AA beside it. ⛔ **This is deliberately NARROW: it licenses the minimum change that reaches conformance, and nothing else.** It is not a general licence to depart from a reference for taste, ergonomics or convenience — any other deviation still needs its own record.
+
+d4 — **THE REFERENCE DESIGNS ARE NOT EDITED AND THE DIVERGENCE IS RECORDED HERE INSTEAD.** `ACMP Backlog &amp; Topic.dc.html` and `ACMP Meetings.dc.html` are the design's source of truth and this package does not own them. A future design-parity review reading either file will find a chip whose height the implementation exceeds; **this ADR is the answer to why**, and the reason it is an ADR rather than a code comment is that a comment is invisible to that review.
+
+d5 — **THE SWEEP MUST PROVE IT HAD A SUBJECT, NOT MERELY THAT IT RAN.** The seed becomes relative to the current month, each calendar case seeds its own meeting rather than inheriting one another spec happened to leave behind, and both cases assert a chip is VISIBLE before invoking axe. `/meetings` joins the sweep, so the sibling fix is guarded rather than merely made.
+lifecycle_status: Approved
+custom_attributes: {"status_note": "Proposed - the operator approved the REMEDY (2026-09-01: pad to a 24px target box without touching the type, recorded as an ADR, seed made relative). The ADR row itself awaits their approval.", "supersedes_nothing": "INV-014 is untouched as a row. This ADR records which of its clauses governs where they conflict, and licenses only the minimum change that reaches conformance.", "measured": "topics.css .cal-event: &lt;button&gt;, display:flex, font-size 10.5px, padding-block 3px, inline-size 100% - about 21px tall. meetings.css .mt-cal-event: &lt;a&gt;, display:block, font-size 9.5px, padding-block 2px - about 17px. WCAG 2.2 SC 2.5.8 requires 24x24. axe reported target-size, impact serious, 16 nodes EN / 17 AR on the Backlog calendar.", "criterion_was_chosen_deliberately": "rtl-a11y.spec.ts's tag list comment: 'D-23: include WCAG 2.2 AA - the machine-testable addition over 2.1 is target-size (SC 2.5.8, &gt;=24x24px)'. Not inherited by accident.", "why_a_floor_not_padding": "Padding is derived from the type and must be re-derived when the type or inherited line-height moves. min-block-size states the conformance threshold itself and keeps holding.", "narrowness": "Licenses the minimum change that reaches conformance and nothing else. Not a general licence to depart from a reference for taste or ergonomics.", "found_by": "DEF-126, from PR #335's e2e run 33453125432."}
+last_referenced: 2026-09-01T01:39:01Z</pre>
+<h2>DEC-199  [decision]</h2>
+<pre>id: DEC-199
+title: OPERATOR RULING, 2026-09-15 (`AC-171`'S BORDER CLAUSE): EVERY BORDER MEETS 3:1 AS `AC-171` READS - A RESTYLE OF EVERY CARD, TABLE AND DIVIDER LINE - WHILE DISABLED CONTROLS FOLLOW WCAG 2.2 AA'S EXEMPTION; `AC-171` IS THEREFORE SUPERSEDED BY `AC-172`.
+decision: Asked over `tamheed-package/ac171-premise-slate.html` (9 blocks, digest `0371ab3f`), after the agent found - before writing any code - that its own drafting of `AC-171` had never checked that border tokens could meet 3:1 (`PE-1168`): every border token is 1.08-2.01:1 in both palettes.
+
+h1 - **ALL BORDERS AT 3:1** (operator: *"Keep AC-171: all borders"*; the other option was superseding it to cover only the borders that identify a form control, via a new control-border token). Every border token is raised to meet 3:1 on every surface it can be painted on, in both palettes, keeping the soft &lt; normal &lt; strong order of weight; `ADR-0045` (AA governs) applies. The agent's computed values, same hue: light `--border-soft` `#848688`, `--border` `#7d7f83`, `--border-strong` `#71757a`; dark `--border-soft` `#666c72`, `--border` `#6c7279`, `--border-strong` `#747d85`.
+
+h2 - **DISABLED CONTROLS FOLLOW WCAG'S EXEMPTION** (operator: *"Follow WCAG's exemption"*; the other option was keeping 3:1 for disabled). WCAG 2.2 AA exempts inactive components from 1.4.3 and 1.4.11; the token test records the exemption explicitly.
+
+h3 - **THE CONSEQUENCE, STATED.** h2 contradicts `AC-171`'s own clause (3:1 for *"disabled controls"*), and approved criteria are frozen, so `AC-171` is superseded by `AC-172` - identical except that its disabled clause becomes the exemption, the border clause names the three tokens, and its verification control uses a border or hover token instead of a disabled one (`SC-074`). `AC-172` is drafted `Proposed` for the operator's approval.
+rationale: Options were put without a recommendation (`DEC-140` d3). The combination of the two answers was put back to the operator as `AC-172`'s text rather than resolved silently.
+lifecycle_status: Approved
+source_kind: clarification
+source_span: Operator ruling 2026-09-15 over ac171-premise-slate.html (digest 0371ab3f); PE-1168.</pre>
+<h2>src/Acmp.Web/src/styles/administration.css:388-399</h2>
+<pre>/* DEF-188 (ADR-0045: AA governs). The design dims an unmonitored service or an inactive channel with opacity
+   0.62, which took the tile's status chip to 2.9:1 and its muted lines under 3:1. The tile is muted with tokens
+   instead - the subtle fill, no shadow, a quieter icon - so every line inside keeps a pair contrast.test.ts
+   holds at AA. */
+.adm-tile-muted {
+  background: var(--subtle);
+  box-shadow: none;
+}
+.adm-tile-muted .adm-tile-icon {
+  background: var(--sunken);
+  color: var(--text-3);
+}</pre>
+<h2>src/Acmp.Web/src/features/governance/governance.css:240-241</h2>
+<pre>/* Superseded/Deprecated records read as retired — dimmed body, matching the design's reduced-opacity treatment. */
+.adr-body.adr-body-muted { opacity: 0.62; }</pre>
+<h2>src/Acmp.Web/src/features/decisions/decisions.css:103-105</h2>
+<pre>.dec-body-muted {
+  opacity: 0.62;
+}</pre>
+<h2>src/Acmp.Web/src/features/meetings/minutes.css:64-66</h2>
+<pre>.mom-doc-muted {
+  opacity: 0.72;
+}</pre>
+<h2>src/Acmp.Web/src/features/actions/actions.css:76-76</h2>
+<pre>.act-toggle-on { font-size: 10px; font-weight: 700; opacity: 0.7; }</pre>
+<h2>src/Acmp.Web/src/features/voting/voting.css:119-119</h2>
+<pre>.vote-closed-sub { font-size: 11.5px; color: var(--st-success-fg); opacity: .85; }</pre>
+<h2>src/Acmp.Web/src/features/traceability/graph.css:97-97</h2>
+<pre>.ig-node--dim { opacity: 0.3; } /* outside the active highlight */</pre>
+</body></html>
